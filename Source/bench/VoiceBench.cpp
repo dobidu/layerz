@@ -66,7 +66,9 @@ static WindowResult run_window(int n_voices, int n_grains, int buffer_size) {
     for (int b = 0; b < blocks; ++b) {
         std::fill(buf.begin(), buf.end(), 0.0f);
 
-        auto t0 = std::chrono::high_resolution_clock::now();
+        // Use steady_clock — high_resolution_clock is not monotonic on Windows
+        // and can produce negative elapsed times, corrupting the mean.
+        auto t0 = std::chrono::steady_clock::now();
 
         // Simulate N simultaneous sine-oscillator voices
         for (int v = 0; v < n_voices; ++v) {
@@ -89,7 +91,7 @@ static WindowResult run_window(int n_voices, int n_grains, int buffer_size) {
             }
         }
 
-        auto t1 = std::chrono::high_resolution_clock::now();
+        auto t1 = std::chrono::steady_clock::now();
         double elapsed_us = std::chrono::duration<double, std::micro>(t1 - t0).count();
         float  cpu_pct    = static_cast<float>(elapsed_us / target_block_us * 100.0);
 
