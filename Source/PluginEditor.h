@@ -11,6 +11,5 @@ public:
     void resized() override;
 
 private:
-    LayerzProcessor& processorRef;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LayerzEditor)
 };
