@@ -42,6 +42,8 @@ Desktop.ini
 *.clangd_build/
 .cache/
 
-# Benchmark outputs (not committed — run locally per machine)
-bench_results_*.tsv
+# Benchmark binaries (not committed — built locally)
 VoiceBench
+VoiceBench.exe
+# Benchmark TSV outputs in root (run locally, copy to docs/spikes/ for permanent record)
+/bench_results_*.tsv
