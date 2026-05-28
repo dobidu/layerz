@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(LAYERZ VERSION 0.0.1 LANGUAGES CXX)
+project(LAYERZ VERSION 0.0.1 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -28,6 +28,7 @@ juce_add_plugin(LAYERZ
     NEEDS_MIDI_OUTPUT           FALSE
     IS_MIDI_EFFECT              FALSE
     COPY_PLUGIN_AFTER_BUILD     FALSE
+    LV2URI                      "urn:layerz:plugin"
 )
 
 target_sources(LAYERZ PRIVATE
