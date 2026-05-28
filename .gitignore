@@ -1,0 +1,47 @@
+# CMake build output
+build/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+
+# JUCE FetchContent cache (re-downloaded via cmake)
+# build/_deps/ is covered by build/ above
+
+# Compiled plugin artifacts (built from source)
+*.vst3
+*.vst
+*.component
+*.aaxplugin
+*.lv2
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+*.dSYM/
+
+# Linux
+*~
+
+# Windows
+Thumbs.db
+Desktop.ini
+*.user
+*.suo
+*.ncb
+*.sdf
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.clangd_build/
+.cache/
+
+# Benchmark outputs (not committed — run locally per machine)
+bench_results_*.tsv
+VoiceBench
