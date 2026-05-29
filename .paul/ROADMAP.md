@@ -15,7 +15,7 @@ Phases: 1 of 8 complete
 | Phase | Name | Plans | Status | Completed |
 |-------|------|-------|--------|-----------|
 | 1 (F0) | Scaffolding + Spikes | 3 | ✅ Complete | 2026-05-29 |
-| 2 (F1) | BEAT Layer | TBD | Not started | - |
+| 2 (F1) | BEAT Layer | 2 | Planning | - |
 | 3 (F2) | BASS Layer + Multi-pattern | TBD | Not started | - |
 | 4 (F3) | Groove Engine | TBD | Not started | - |
 | 5 (F4) | HARMONIC + MELODIC | TBD | Not started | - |
@@ -63,7 +63,8 @@ Phases: 1 of 8 complete
 - Per-layer level + mute/solo
 
 **Plans:**
-- [ ] 02-01: TBD during /paul:plan
+- [ ] 02-01: Drum engine — DrumVoice (JUCE DSP), VoiceBank, BeatSequencer, AudioThreadGuard
+- [ ] 02-02: BEAT layer UI — StepRow, VoiceParamPanel, BeatLayerStrip, Editor rewrite
 
 ### Phase 3 (F2): BASS Layer + Multi-pattern + Chain
 

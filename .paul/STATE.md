@@ -10,10 +10,10 @@ See: .paul/PROJECT.md (updated 2026-05-28)
 ## Current Position
 
 Milestone: v1.0 Initial Release (v1.0.0)
-Phase: 2 of 8 (F1 — BEAT Layer) — Not started
-Plan: None yet
-Status: Ready to plan
-Last activity: 2026-05-29 — Phase 1 (F0) complete, transitioned to Phase 2
+Phase: 2 of 8 (F1 — BEAT Layer) — Planning
+Plan: 02-01 + 02-02 created, awaiting approval
+Status: PLAN created, ready for APPLY
+Last activity: 2026-05-29 — Created Phase 2 plans
 
 Progress:
 - Milestone: [█░░░░░░░░░] 12%
@@ -24,7 +24,7 @@ Progress:
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ✓     [Phase 1 complete — ready for next PLAN]
+  ✓        ○        ○     [Plans created, awaiting approval]
 ```
 
 ## Accumulated Context
@@ -47,13 +47,13 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-29
-Stopped at: Phase 1 (F0) UNIFY complete — transitioned to Phase 2 (F1)
-Next action: /paul:plan — Phase 2 (F1): BEAT Layer
+Stopped at: Phase 2 (F1) plans created — 02-01 (engine) + 02-02 (UI)
+Next action: Review plans, then /paul:apply .paul/phases/02-beat-layer/
 Resume context:
-  Build green on macOS. CI (Linux/Windows) push pending verification.
-  ProjectStore, Clock, Schema v1, ProfileConfig, UserConfig all in place.
-  F1 can read patterns via store_.snapshot() and dispatch to beat clock.
-  ProfileConfig caps are PRELIMINARY — recalibrate after F1 Faust drum voice exists.
+  02-01 (wave 1, autonomous): DrumVoice + VoiceBank + BeatSequencer + AudioThreadGuard
+  02-02 (wave 2, has human-verify): StepRow + VoiceParamPanel + BeatLayerStrip + Editor
+  Faust deferred — drum voices use JUCE DSP in F1.
+  Schema_version stays 1 (adding DrumTrack with defaults is backward-compatible).
 
 ---
 *STATE.md — Updated after every significant action*
