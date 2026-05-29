@@ -11,9 +11,9 @@ See: .paul/PROJECT.md (updated 2026-05-28)
 
 Milestone: v1.0 Initial Release (v1.0.0)
 Phase: 2 of 8 (F1 — BEAT Layer) — Planning
-Plan: 02-01 + 02-02 created, awaiting approval
-Status: PLAN created, ready for APPLY
-Last activity: 2026-05-29 — Created Phase 2 plans
+Plan: 02-01 + 02-02 created + audited, awaiting approval
+Status: PLAN created and audited, ready for APPLY
+Last activity: 2026-05-29 — Enterprise audit complete; applied 8 must-have + 5 strongly-recommended
 
 Progress:
 - Milestone: [█░░░░░░░░░] 12%
@@ -32,7 +32,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 ### Decisions
 | Decision | Phase | Impact |
 |----------|-------|--------|
-| Thread-safety: lock-free-snapshot (C++17 short-mutex) | F0 | Audio thread reads via snapshot(); upgrade to C++20 atomic in F1 |
+| Thread-safety: lock-free-snapshot (C++17 short-mutex → C++20 atomic in F1) | F0→F1 | 02-01 includes C++20 bump + atomic<shared_ptr> upgrade; AC4 requires it |
 | PROFILE_PLUGIN: 12 voices, 24 grains | F0 | Hardcoded in ProfileConfig.h; recalibrate post-F1 with real Faust |
 | PROFILE_STANDALONE: 24 voices, 40 grains | F0 | Same basis |
 | UserConfig separate from Project | F0 | LLM key + profile override in platform config dir, never .layerz |
