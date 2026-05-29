@@ -40,6 +40,9 @@ target_sources(LAYERZ PRIVATE
     Source/audio/DrumVoice.cpp
     Source/audio/VoiceBank.cpp
     Source/audio/BeatSequencer.cpp
+    Source/gui/StepRow.cpp
+    Source/gui/VoiceParamPanel.cpp
+    Source/gui/BeatLayerStrip.cpp
 )
 
 target_compile_features(LAYERZ PUBLIC cxx_std_17)
@@ -75,6 +78,9 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         Source/audio/DrumVoice.cpp
         Source/audio/VoiceBank.cpp
         Source/audio/BeatSequencer.cpp
+        Source/gui/StepRow.cpp
+        Source/gui/VoiceParamPanel.cpp
+        Source/gui/BeatLayerStrip.cpp
         PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra;-Werror"
     )
 elseif(MSVC)
@@ -87,6 +93,9 @@ elseif(MSVC)
         Source/audio/DrumVoice.cpp
         Source/audio/VoiceBank.cpp
         Source/audio/BeatSequencer.cpp
+        Source/gui/StepRow.cpp
+        Source/gui/VoiceParamPanel.cpp
+        Source/gui/BeatLayerStrip.cpp
         PROPERTIES COMPILE_OPTIONS "/W4;/WX"
     )
 endif()
