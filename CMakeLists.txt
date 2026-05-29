@@ -34,6 +34,9 @@ juce_add_plugin(LAYERZ
 target_sources(LAYERZ PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
+    Source/model/ProjectStore.cpp
+    Source/config/UserConfig.cpp
+    Source/audio/Clock.cpp
 )
 
 target_compile_features(LAYERZ PUBLIC cxx_std_17)
@@ -62,12 +65,18 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     set_source_files_properties(
         Source/PluginProcessor.cpp
         Source/PluginEditor.cpp
+        Source/model/ProjectStore.cpp
+        Source/config/UserConfig.cpp
+        Source/audio/Clock.cpp
         PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra;-Werror"
     )
 elseif(MSVC)
     set_source_files_properties(
         Source/PluginProcessor.cpp
         Source/PluginEditor.cpp
+        Source/model/ProjectStore.cpp
+        Source/config/UserConfig.cpp
+        Source/audio/Clock.cpp
         PROPERTIES COMPILE_OPTIONS "/W4;/WX"
     )
 endif()
