@@ -39,7 +39,6 @@ target_sources(LAYERZ PRIVATE
 target_compile_features(LAYERZ PUBLIC cxx_std_17)
 
 target_compile_definitions(LAYERZ PUBLIC
-    JUCE_DISPLAY_SPLASH_SCREEN=1    # Required: JUCE GPLv3 free tier license obligation
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
 )
@@ -49,16 +48,19 @@ target_link_libraries(LAYERZ PRIVATE
     juce::juce_gui_basics
 )
 
-# Mark JUCE headers as SYSTEM so -Werror does not apply to JUCE's own warnings.
-# JUCE generates warnings on newer GCC/Clang/MSVC that are outside project control.
-target_include_directories(LAYERZ SYSTEM PRIVATE
-    ${juce_SOURCE_DIR}
-    ${juce_SOURCE_DIR}/modules
-)
-
-# -Werror scoped to project sources only (JUCE excluded via SYSTEM includes above)
+# Apply strict warnings only to project source files — NOT to JUCE module sources.
+# target_compile_options on the LAYERZ target would hit JUCE's compiled modules too,
+# which contain their own compiler-version-specific warnings we cannot fix.
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(LAYERZ PRIVATE -Wall -Wextra -Werror)
+    set_source_files_properties(
+        Source/PluginProcessor.cpp
+        Source/PluginEditor.cpp
+        PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra;-Werror"
+    )
 elseif(MSVC)
-    target_compile_options(LAYERZ PRIVATE /W4 /WX)
+    set_source_files_properties(
+        Source/PluginProcessor.cpp
+        Source/PluginEditor.cpp
+        PROPERTIES COMPILE_OPTIONS "/W4;/WX"
+    )
 endif()
