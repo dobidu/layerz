@@ -12,10 +12,12 @@ public:
     void paint(juce::Graphics&) override;
     void resized() override;
     void updateFromSnapshot(const Project& snap);
+    void setCurrentStep(int step) noexcept;  // -1 = not playing
 
 private:
     ProjectStore& store_;
     int           trackIndex_;
+    int           currentStep_ = -1;
     juce::TextButton stepButtons_[16];
 
     bool hasEventAtStep(const Project& snap, int step) const;

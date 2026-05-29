@@ -2,7 +2,7 @@
 
 static constexpr int kTopBarHeight  = 48;
 static constexpr int kLayerRowH     = 26;  // placeholder rows for future layers
-static constexpr int kBeatStripH    = 280; // 4 rows × 70px
+static constexpr int kBeatStripH    = 304; // 24px header + 4×70px rows
 
 LayerzEditor::LayerzEditor(LayerzProcessor& p)
     : AudioProcessorEditor(&p)
@@ -29,12 +29,13 @@ LayerzEditor::LayerzEditor(LayerzProcessor& p)
     addChildComponent(playButton_);
     playButton_.setButtonText("PLAY");
     playButton_.setToggleable(true);
+    playButton_.setClickingTogglesState(true);
     playButton_.setColour(juce::TextButton::buttonColourId,  juce::Colour(0xFF2A2A2Au));
     playButton_.setColour(juce::TextButton::buttonOnColourId, juce::Colour(0xFF27AE60u));
     playButton_.onClick = [this] {
         bool playing = playButton_.getToggleState();
         processorRef_.setStandalonePlaying(playing);
-        playButton_.setButtonText(playing ? "■ STOP" : "▶ PLAY");
+        playButton_.setButtonText(playing ? "STOP" : "PLAY");
     };
     playButton_.setVisible(standalone);
 

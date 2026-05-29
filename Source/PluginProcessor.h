@@ -41,14 +41,17 @@ public:
     const UserConfig&  userConfig()    const noexcept { return config_; }
     Clock&             getClock()      noexcept { return clock_; }
     void setStandalonePlaying(bool playing) noexcept { clock_.setPlaying(playing); }
+    // GUI thread: current playing step (0-15), -1 if not playing
+    int currentPlayStep() const noexcept { return lastPlayStep_.load(std::memory_order_relaxed); }
 
 private:
     ProjectStore  store_;
     UserConfig    config_;
     Clock         clock_;
     ProfileConfig profile_;
-    VoiceBank     voiceBank_;
-    BeatSequencer sequencer_;
+    VoiceBank          voiceBank_;
+    BeatSequencer      sequencer_;
+    std::atomic<int>   lastPlayStep_ { -1 };
 
     void seedTestPattern();
 

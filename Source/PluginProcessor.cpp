@@ -24,7 +24,7 @@ void LayerzProcessor::seedTestPattern() {
 
         // kick: quarter beats 0,4,8,12
         DrumTrack kick;
-        kick.voice_type = "kick"; kick.param1 = 80.0f;
+        kick.voice_type = "kick"; kick.param1 = 120.0f;  // pitch_decay_ms
         for (int s : {0, 4, 8, 12}) {
             Event e; e.step = s; e.velocity = 1.0f;
             kick.events.push_back(e);
@@ -32,7 +32,7 @@ void LayerzProcessor::seedTestPattern() {
 
         // snare: beats 4, 12
         DrumTrack snare;
-        snare.voice_type = "snare"; snare.param1 = 80.0f;
+        snare.voice_type = "snare"; snare.param1 = 60.0f;   // noise_decay_ms
         for (int s : {4, 12}) {
             Event e; e.step = s; e.velocity = 0.85f;
             snare.events.push_back(e);
@@ -40,7 +40,7 @@ void LayerzProcessor::seedTestPattern() {
 
         // hat: every even step
         DrumTrack hat;
-        hat.voice_type = "hat"; hat.param1 = 30.0f;
+        hat.voice_type = "hat"; hat.param1 = 25.0f;    // decay_ms (short, tight)
         for (int s = 0; s < 16; s += 2) {
             Event e; e.step = s; e.velocity = 0.6f;
             hat.events.push_back(e);
@@ -92,6 +92,19 @@ void LayerzProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 
     auto events = clock_.process(pos, buffer.getNumSamples());
     sequencer_.process(*snap, events, buffer, voiceBank_);
+
+    // Copy ch0 → ch1 for stereo output (voices write mono to ch0 only)
+    if (buffer.getNumChannels() >= 2)
+        buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
+
+    // Track current step for UI step indicator (audio thread → atomic write)
+    if (events.count > 0 && !snap->patterns.empty() && !snap->patterns[0].layers.empty()) {
+        int len = snap->patterns[0].length_steps;
+        lastPlayStep_.store(events.data[events.count - 1].beat_index % len,
+                            std::memory_order_relaxed);
+    } else if (!clock_.isPlaying()) {
+        lastPlayStep_.store(-1, std::memory_order_relaxed);
+    }
 }
 
 juce::AudioProcessorEditor* LayerzProcessor::createEditor() {

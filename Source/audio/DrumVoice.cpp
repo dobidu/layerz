@@ -35,8 +35,8 @@ void DrumVoice::trigger(float velocity, float param1) noexcept {
     // Retrigger: always reset from start regardless of whether voice was active
     switch (type_) {
         case Type::KICK:
-            pitchHz_ = 180.0;
-            len_ = static_cast<int>(sampleRate_ * 0.5);  // max 500ms
+            pitchHz_ = 220.0;
+            len_ = static_cast<int>(sampleRate_ * 0.6);  // max 600ms
             break;
         case Type::SNARE: {
             float decayMs = juce::jlimit(30.0f, 200.0f, param1_);
@@ -46,17 +46,17 @@ void DrumVoice::trigger(float velocity, float param1) noexcept {
         case Type::HAT: {
             float decayMs = juce::jlimit(10.0f, 80.0f, param1_);
             len_ = static_cast<int>(sampleRate_ * decayMs / 1000.0f);
-            // Update hat filter coefficients for this trigger
             if (filterPrepared_) {
+                // 7kHz highpass Q=1.2 — metallic character
                 auto coeffs = juce::dsp::IIR::Coefficients<float>::makeHighPass(
-                    sampleRate_, 8000.0f, 0.7f);
+                    sampleRate_, 7000.0f, 1.2f);
                 *hatFilter_.coefficients = *coeffs;
                 hatFilter_.reset();
             }
             break;
         }
         case Type::PERC:
-            len_ = static_cast<int>(sampleRate_ * 0.05);  // 50ms fixed
+            len_ = static_cast<int>(sampleRate_ * 0.08);  // 80ms
             break;
     }
 }
@@ -75,23 +75,26 @@ void DrumVoice::processKick(juce::AudioBuffer<float>& buf, int start) noexcept {
     auto* ch = buf.getWritePointer(0);
     float decayMs = juce::jlimit(20.0f, 500.0f, param1_);
     double pitchDecaySamples = sampleRate_ * decayMs / 1000.0;
-    double pitchLow = 50.0, pitchHigh = 180.0;
-    double ampDecaySamples = sampleRate_ * 0.4;  // 400ms amplitude decay
+    double pitchLow = 45.0, pitchHigh = 200.0;
+    double ampDecaySamples   = sampleRate_ * 0.45;  // 450ms — longer body
+    double clickDecaySamples = sampleRate_ * 0.008; // 8ms click punch
 
     int avail = buf.getNumSamples() - start;
     int write = juce::jmin(len_ - pos_, avail);
 
     for (int i = 0; i < write; ++i) {
         double t = static_cast<double>(pos_ + i);
-        // Exponential pitch sweep
         double pitchNorm = std::exp(-t / pitchDecaySamples);
         pitchHz_ = pitchLow + (pitchHigh - pitchLow) * pitchNorm;
-        // Advance phase
         phase_ += pitchHz_ / sampleRate_;
         if (phase_ >= 1.0) phase_ -= 1.0;
-        // Amplitude envelope
-        float amp = velocity_ * static_cast<float>(std::exp(-t / ampDecaySamples));
-        ch[start + i] += amp * static_cast<float>(std::sin(kTwoPi * phase_));
+        float body  = 0.75f * velocity_
+                      * static_cast<float>(std::exp(-t / ampDecaySamples))
+                      * static_cast<float>(std::sin(kTwoPi * phase_));
+        float click = 0.55f * velocity_
+                      * static_cast<float>(std::exp(-t / clickDecaySamples))
+                      * nextNoise();
+        ch[start + i] += body + click;
     }
     pos_ += write;
 }
@@ -99,21 +102,25 @@ void DrumVoice::processKick(juce::AudioBuffer<float>& buf, int start) noexcept {
 void DrumVoice::processSnare(juce::AudioBuffer<float>& buf, int start) noexcept {
     auto* ch = buf.getWritePointer(0);
     float decayMs = juce::jlimit(30.0f, 200.0f, param1_);
-    double decaySamples = sampleRate_ * decayMs / 1000.0;
+    double decaySamples     = sampleRate_ * decayMs / 1000.0;
+    double snapDecaySamples = sampleRate_ * 0.008; // 8ms snap transient
 
     int avail = buf.getNumSamples() - start;
     int write = juce::jmin(len_ - pos_, avail);
 
     for (int i = 0; i < write; ++i) {
         double t = static_cast<double>(pos_ + i);
-        float amp = velocity_ * static_cast<float>(std::exp(-t / decaySamples));
-        // Noise component (LCG — deterministic, zero stdlib overhead)
-        float noise = nextNoise();
-        // Tone component: ~220Hz sine at 30% level
-        phase_ += 220.0 / sampleRate_;
+        float amp  = velocity_ * static_cast<float>(std::exp(-t / decaySamples));
+        float snap = velocity_ * static_cast<float>(std::exp(-t / snapDecaySamples));
+        // Average 3 LCG samples → warmer, less aliased noise
+        float noise = (nextNoise() + nextNoise() + nextNoise()) * 0.333f;
+        // Snap transient: brighter single noise burst
+        float snapN = nextNoise();
+        // Body tone: 200Hz, subtle (10%) — weight without bell-like ring
+        phase_ += 200.0 / sampleRate_;
         if (phase_ >= 1.0) phase_ -= 1.0;
-        float tone = 0.3f * static_cast<float>(std::sin(kTwoPi * phase_));
-        ch[start + i] += amp * (noise * 0.7f + tone);
+        float tone = 0.1f * static_cast<float>(std::sin(kTwoPi * phase_));
+        ch[start + i] += 0.6f * amp * noise + 0.4f * snap * snapN + 0.6f * amp * tone;
     }
     pos_ += write;
 }

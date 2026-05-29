@@ -65,8 +65,10 @@ void BeatLayerStrip::resized() {
 
 void BeatLayerStrip::timerCallback() {
     auto snap = proc_.projectStore().snapshot();
+    int playStep = proc_.currentPlayStep();
     for (int i = 0; i < 4; ++i) {
         stepRows_[i].updateFromSnapshot(*snap);
+        stepRows_[i].setCurrentStep(playStep);
         paramPanels_[i].updateFromSnapshot(*snap);
     }
 }

@@ -50,15 +50,29 @@ bool StepRow::hasEventAtStep(const Project& snap, int step) const {
                        [step](const Event& e){ return e.step == step; });
 }
 
+void StepRow::setCurrentStep(int step) noexcept {
+    if (currentStep_ != step) {
+        currentStep_ = step;
+        repaint();
+    }
+}
+
 void StepRow::paint(juce::Graphics& g) {
     g.fillAll(juce::Colour(0xFF1E1E1Eu));
+    // Draw playhead indicator below the current step button
+    if (currentStep_ >= 0 && currentStep_ < 16) {
+        int w = getWidth() / 16;
+        int x = currentStep_ * w;
+        g.setColour(juce::Colour(0xFFFFFFFFu).withAlpha(0.9f));
+        g.fillRect(x, getHeight() - 3, w, 3);
+    }
 }
 
 void StepRow::resized() {
     auto bounds = getLocalBounds();
     int w = bounds.getWidth() / 16;
     for (int i = 0; i < 16; ++i)
-        stepButtons_[i].setBounds(bounds.getX() + i * w, bounds.getY(), w, bounds.getHeight());
+        stepButtons_[i].setBounds(bounds.getX() + i * w, bounds.getY(), w, bounds.getHeight() - 4);
 }
 
 void StepRow::updateFromSnapshot(const Project& snap) {
