@@ -22,12 +22,22 @@ struct Aesthetics {
     // roll, stutter, fracture added in F3
 };
 
+struct DrumTrack {
+    std::string       voice_type;        // "kick" | "snare" | "hat" | "perc"
+    float             level  = 1.0f;
+    bool              mute   = false;
+    float             param1 = 100.0f;   // kick=pitch_decay_ms, snare=noise_decay_ms,
+                                         // hat=decay_ms, perc=freq_hz
+    std::vector<Event> events;
+};
+
 enum class LayerType { BEAT, BASS, HARMONIC, MELODIC };
 
 struct Layer {
     LayerType        type  = LayerType::BEAT;
     std::string      voice_ref;
-    std::vector<Event> events;
+    std::vector<Event> events;           // non-BEAT layers (F2+)
+    std::vector<DrumTrack> drum_tracks;  // BEAT layer: 4 tracks (kick/snare/hat/perc)
     Aesthetics       aesthetics;
 };
 
@@ -58,9 +68,17 @@ inline bool operator==(const Aesthetics& a, const Aesthetics& b) {
     return std::abs(a.drag - b.drag) < 1e-6f
         && std::abs(a.push - b.push) < 1e-6f;
 }
+inline bool operator==(const DrumTrack& a, const DrumTrack& b) {
+    return a.voice_type == b.voice_type
+        && std::abs(a.level  - b.level)  < 1e-6f
+        && a.mute == b.mute
+        && std::abs(a.param1 - b.param1) < 1e-6f
+        && a.events == b.events;
+}
 inline bool operator==(const Layer& a, const Layer& b) {
     return a.type == b.type && a.voice_ref == b.voice_ref
-        && a.events == b.events && a.aesthetics == b.aesthetics;
+        && a.events == b.events && a.drum_tracks == b.drum_tracks
+        && a.aesthetics == b.aesthetics;
 }
 inline bool operator==(const Pattern& a, const Pattern& b) {
     return a.id == b.id && a.length_steps == b.length_steps && a.layers == b.layers;

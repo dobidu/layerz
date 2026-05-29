@@ -51,6 +51,18 @@ static juce::var aestheticsToVar(const Aesthetics& a) {
     return obj;
 }
 
+static juce::var drumTrackToVar(const DrumTrack& dt) {
+    auto* obj = new juce::DynamicObject();
+    obj->setProperty("voice_type", juce::String(dt.voice_type));
+    obj->setProperty("level",      dt.level);
+    obj->setProperty("mute",       dt.mute);
+    obj->setProperty("param1",     dt.param1);
+    juce::Array<juce::var> evs;
+    for (const auto& e : dt.events) evs.add(eventToVar(e));
+    obj->setProperty("events", evs);
+    return obj;
+}
+
 static juce::var layerToVar(const Layer& l) {
     auto* obj = new juce::DynamicObject();
     obj->setProperty("type",      layerTypeToString(l.type));
@@ -59,6 +71,9 @@ static juce::var layerToVar(const Layer& l) {
     juce::Array<juce::var> evs;
     for (const auto& e : l.events) evs.add(eventToVar(e));
     obj->setProperty("events", evs);
+    juce::Array<juce::var> dts;
+    for (const auto& dt : l.drum_tracks) dts.add(drumTrackToVar(dt));
+    obj->setProperty("drum_tracks", dts);
     return obj;
 }
 
@@ -101,6 +116,22 @@ static juce::Result varToAesthetics(const juce::var& v, Aesthetics& out) {
     return juce::Result::ok();
 }
 
+static juce::Result varToDrumTrack(const juce::var& v, DrumTrack& out) {
+    if (! v.isObject()) return juce::Result::fail("DrumTrack is not an object");
+    out.voice_type = v["voice_type"].toString().toStdString();
+    out.level      = static_cast<float>(static_cast<double>(v["level"]));
+    out.mute       = static_cast<bool>(v["mute"]);
+    out.param1     = static_cast<float>(static_cast<double>(v["param1"]));
+    if (const auto* evArr = v["events"].getArray()) {
+        for (const auto& ev : *evArr) {
+            Event e;
+            if (auto r = varToEvent(ev, e); r.failed()) return r;
+            out.events.push_back(e);
+        }
+    }
+    return juce::Result::ok();
+}
+
 static juce::Result varToLayer(const juce::var& v, Layer& out) {
     if (! v.isObject()) return juce::Result::fail("Layer is not an object");
     out.type      = layerTypeFromString(v["type"].toString());
@@ -111,6 +142,14 @@ static juce::Result varToLayer(const juce::var& v, Layer& out) {
             Event e;
             if (auto r = varToEvent(ev, e); r.failed()) return r;
             out.events.push_back(e);
+        }
+    }
+    // Missing drum_tracks field → empty vector → safe (backward compat with F0 files)
+    if (const auto* dtArr = v["drum_tracks"].getArray()) {
+        for (const auto& dt : *dtArr) {
+            DrumTrack track;
+            if (auto r = varToDrumTrack(dt, track); r.failed()) return r;
+            out.drum_tracks.push_back(track);
         }
     }
     return juce::Result::ok();

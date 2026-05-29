@@ -3,6 +3,9 @@
 #include "model/ProjectStore.h"
 #include "audio/Clock.h"
 #include "audio/ProfileConfig.h"
+#include "audio/VoiceBank.h"
+#include "audio/BeatSequencer.h"
+#include "audio/AudioThreadGuard.h"
 #include "config/UserConfig.h"
 
 class LayerzProcessor : public juce::AudioProcessor {
@@ -33,21 +36,21 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    // Accessible from GUI thread for profile changes
-    ProjectStore& projectStore() noexcept { return store_; }
-    const UserConfig& userConfig() const noexcept { return config_; }
+    // GUI thread accessors
+    ProjectStore&      projectStore()  noexcept { return store_; }
+    const UserConfig&  userConfig()    const noexcept { return config_; }
+    Clock&             getClock()      noexcept { return clock_; }
     void setStandalonePlaying(bool playing) noexcept { clock_.setPlaying(playing); }
 
 private:
-    ProjectStore store_;
-    UserConfig   config_;
-    Clock        clock_;
+    ProjectStore  store_;
+    UserConfig    config_;
+    Clock         clock_;
     ProfileConfig profile_;
+    VoiceBank     voiceBank_;
+    BeatSequencer sequencer_;
 
-    // Hann-windowed click burst written at beat event sample offsets (F0 timing proof)
-    static constexpr int kClickSamples = 44; // ~1ms at 44100Hz
-    float clickBuffer_[kClickSamples];
-    void buildClickBuffer() noexcept;
+    void seedTestPattern();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LayerzProcessor)
 };

@@ -37,6 +37,9 @@ target_sources(LAYERZ PRIVATE
     Source/model/ProjectStore.cpp
     Source/config/UserConfig.cpp
     Source/audio/Clock.cpp
+    Source/audio/DrumVoice.cpp
+    Source/audio/VoiceBank.cpp
+    Source/audio/BeatSequencer.cpp
 )
 
 target_compile_features(LAYERZ PUBLIC cxx_std_17)
@@ -49,6 +52,7 @@ target_compile_definitions(LAYERZ PUBLIC
 target_link_libraries(LAYERZ PRIVATE
     juce::juce_audio_utils
     juce::juce_gui_basics
+    juce::juce_dsp
 )
 
 # Optional JUCE AudioPluginHost for local VST3/AU testing (not built by default)
@@ -68,6 +72,9 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         Source/model/ProjectStore.cpp
         Source/config/UserConfig.cpp
         Source/audio/Clock.cpp
+        Source/audio/DrumVoice.cpp
+        Source/audio/VoiceBank.cpp
+        Source/audio/BeatSequencer.cpp
         PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra;-Werror"
     )
 elseif(MSVC)
@@ -77,6 +84,9 @@ elseif(MSVC)
         Source/model/ProjectStore.cpp
         Source/config/UserConfig.cpp
         Source/audio/Clock.cpp
+        Source/audio/DrumVoice.cpp
+        Source/audio/VoiceBank.cpp
+        Source/audio/BeatSequencer.cpp
         PROPERTIES COMPILE_OPTIONS "/W4;/WX"
     )
 endif()
