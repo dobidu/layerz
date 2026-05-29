@@ -13,9 +13,9 @@ Producers get the immediacy of a groovebox and the aesthetic reach of a full DAW
 | Attribute | Value |
 |-----------|-------|
 | Type | Application |
-| Version | 0.0.0 |
-| Status | Pre-scaffolding |
-| Last Updated | 2026-05-28 |
+| Version | 0.1.0 |
+| Status | Scaffolding complete |
+| Last Updated | 2026-05-29 |
 
 ## Requirements
 
@@ -29,13 +29,17 @@ Producers get the immediacy of a groovebox and the aesthetic reach of a full DAW
 - Distributable as standalone + VST3/AU/LV2 on Linux/macOS/Windows
 
 ### Validated (Shipped)
-None yet.
+- [x] F0: CMake/JUCE build — VST3/AU/LV2/Standalone on macOS (CI pending all 3 platforms) — v0.1.0
+- [x] F0: Project model (Schema.h v1, ProjectStore with JSON round-trip, schema_version) — v0.1.0
+- [x] F0: Audio thread harness (Clock with host PPQ + internal BPM, Hann click) — v0.1.0
+- [x] F0: ProfileConfig (PLUGIN: 12v/24g, STANDALONE: 24v/40g — F0.99 spike, Lenovo-calibrated) — v0.1.0
+- [x] F0: UserConfig (LLM opt-in default=false, profile override, platform config dir) — v0.1.0
+- [x] F0: Performance budget spike + thread-safety model decided (lock-free-snapshot) — v0.1.0
 
 ### Active (In Progress)
-None yet.
+None.
 
 ### Planned (Next)
-- F0: Scaffolding + spikes (CMake/JUCE setup, CI, thread-safety model, performance budget)
 - F1: BEAT layer (drum voices, step sequencer, layer strip UI)
 - F2: BASS layer + multi-pattern + save/load
 - F3: Groove engine (DRAG/PUSH/ROLL/STUTTER/FRACTURE, template library)
@@ -78,7 +82,11 @@ None yet.
 | JSON project model (.layerz) | Serializable, diffable, LLM-readable canonical state | Pre-init | Active |
 | LLM bridge provider-neutral | PatternPatch protocol; Anthropic API as first target | Pre-init | Active |
 | Two profiles: PLUGIN / STANDALONE | Different resource caps, same codebase | Pre-init | Active |
-| Thread-safety model (TBD) | Lock-free snapshot vs message-passed — F0.99b spike | - | Pending spike |
+| Thread-safety model | Lock-free snapshot (C++17 short-mutex variant; upgrade to C++20 atomic<shared_ptr> in F1) | 2026-05-29 | Active |
+| PROFILE_PLUGIN caps | max_voices=12, max_grains=24 — Lenovo i7-8565U bench, 10x real-cost multiplier. Preliminary; recalibrate post-F1 | 2026-05-29 | Active |
+| PROFILE_STANDALONE caps | max_voices=24, max_grains=40 — same basis | 2026-05-29 | Active |
+| UserConfig separate from Project | LLM key + profile override live in platform config dir, never in .layerz files | 2026-05-29 | Active |
+| juce::var/JSON for F0 serialisation | Sufficient for minimal schema; nlohmann/json deferred to F1 when schema grows | 2026-05-29 | Active |
 
 ## Success Metrics
 
@@ -87,7 +95,7 @@ None yet.
 | 30-sec beat with audible lurch/push/fracture | After F3, author records and recognizes feel | - | Not started |
 | 2-min piece using all four layers | After F4, completable entirely in LAYERZ | - | Not started |
 | Beta validation | 3–5 producers after F4 confirm concept before F7 | - | Not started |
-| Plugin + standalone builds on Linux/macOS/Windows | All CI green | - | Not started |
+| Plugin + standalone builds on Linux/macOS/Windows | All CI green | macOS ✓, Linux/Windows CI pending | In progress |
 
 ## Tech Stack
 
@@ -114,5 +122,5 @@ None yet.
 | Acceptance criteria | ./ACCEPTANCE.md (root) |
 
 ---
-*Created: 2026-05-28*
-*PROJECT.md — Updated when requirements or context change*
+---
+*Last updated: 2026-05-29 after Phase 1 (F0)*

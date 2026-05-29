@@ -8,13 +8,13 @@ LAYERZ v1 ships as a standalone groovebox + VST3/AU/LV2 plugin across Linux/macO
 
 **v1.0 Initial Release** (v1.0.0)
 Status: In progress
-Phases: 0 of 8 complete
+Phases: 1 of 8 complete
 
 ## Phases
 
 | Phase | Name | Plans | Status | Completed |
 |-------|------|-------|--------|-----------|
-| 1 (F0) | Scaffolding + Spikes | 3 | Planning | - |
+| 1 (F0) | Scaffolding + Spikes | 3 | ✅ Complete | 2026-05-29 |
 | 2 (F1) | BEAT Layer | TBD | Not started | - |
 | 3 (F2) | BASS Layer + Multi-pattern | TBD | Not started | - |
 | 4 (F3) | Groove Engine | TBD | Not started | - |
@@ -45,9 +45,9 @@ Phases: 0 of 8 complete
 - Profile switching (PROFILE_PLUGIN / PROFILE_STANDALONE)
 
 **Plans:**
-- [ ] 01-01: Spikes — performance budget (F0.99) + thread-safety model (F0.99b)
-- [ ] 01-02: CMake/JUCE setup + GitHub Actions CI (wave 1, parallel to 01-01)
-- [ ] 01-03: Project model + audio thread clock harness (wave 2, depends on 01-01)
+- [x] 01-01: Spikes — F0.99 (perf budget: 12v/24g plugin, 24v/40g standalone) + F0.99b (lock-free-snapshot)
+- [x] 01-02: CMake/JUCE 8.0.4 + GitHub Actions CI — VST3/AU/LV2/Standalone builds
+- [x] 01-03: ProjectStore, Schema.h v1, Clock, ProfileConfig, UserConfig, PluginProcessor wired
 
 ### Phase 2 (F1): BEAT Layer
 
