@@ -48,6 +48,13 @@ target_link_libraries(LAYERZ PRIVATE
     juce::juce_gui_basics
 )
 
+# Optional JUCE AudioPluginHost for local VST3/AU testing (not built by default)
+add_subdirectory(
+    ${juce_SOURCE_DIR}/extras/AudioPluginHost
+    ${CMAKE_BINARY_DIR}/AudioPluginHost
+    EXCLUDE_FROM_ALL
+)
+
 # Apply strict warnings only to project source files — NOT to JUCE module sources.
 # target_compile_options on the LAYERZ target would hit JUCE's compiled modules too,
 # which contain their own compiler-version-specific warnings we cannot fix.
