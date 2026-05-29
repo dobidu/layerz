@@ -40,9 +40,20 @@ LayerzEditor::LayerzEditor(LayerzProcessor& p)
     playButton_.setVisible(standalone);
 
     setSize(900, 600);
+    startTimerHz(10); // sync play button state with clock
 }
 
-LayerzEditor::~LayerzEditor() {}
+LayerzEditor::~LayerzEditor() { stopTimer(); }
+
+void LayerzEditor::timerCallback() {
+    if (! processorRef_.getClock().isStandaloneMode()) return;
+    bool playing = processorRef_.getClock().isPlaying();
+    // Sync button toggle state without firing onClick
+    if (playButton_.getToggleState() != playing) {
+        playButton_.setToggleState(playing, juce::dontSendNotification);
+        playButton_.setButtonText(playing ? "STOP" : "PLAY");
+    }
+}
 
 void LayerzEditor::paint(juce::Graphics& g) {
     g.fillAll(juce::Colour(0xFF121212u));

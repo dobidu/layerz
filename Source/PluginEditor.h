@@ -3,13 +3,14 @@
 #include "PluginProcessor.h"
 #include "gui/BeatLayerStrip.h"
 
-class LayerzEditor : public juce::AudioProcessorEditor {
+class LayerzEditor : public juce::AudioProcessorEditor, public juce::Timer {
 public:
     explicit LayerzEditor(LayerzProcessor&);
     ~LayerzEditor() override;
 
     void paint(juce::Graphics&) override;
     void resized() override;
+    void timerCallback() override; // syncs play button state with clock
 
 private:
     LayerzProcessor& processorRef_;

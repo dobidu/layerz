@@ -33,7 +33,8 @@ private:
     int   len_ = 0;    // total envelope length in samples
 
     // Synthesis state — pre-allocated, never reallocated after prepare()
-    double phase_   = 0.0;   // sine oscillator phase [0..1]
+    double phase_   = 0.0;   // primary oscillator phase [0..1]
+    double phase2_  = 0.0;   // second oscillator (hat ring modulation, snare body)
     double pitchHz_ = 180.0; // current pitch (mutated by kick envelope)
 
     // Hat filter (pre-allocated coefficients, updated in trigger())

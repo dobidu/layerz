@@ -31,6 +31,7 @@ void DrumVoice::trigger(float velocity, float param1) noexcept {
     param1_   = param1;
     pos_      = 0;
     phase_    = 0.0;
+    phase2_   = 0.0;
 
     // Retrigger: always reset from start regardless of whether voice was active
     switch (type_) {
@@ -130,15 +131,28 @@ void DrumVoice::processHat(juce::AudioBuffer<float>& buf, int start) noexcept {
     float decayMs = juce::jlimit(10.0f, 80.0f, param1_);
     double decaySamples = sampleRate_ * decayMs / 1000.0;
 
+    // Ring modulation of two inharmonic sine waves — metallic cymbal character.
+    // f1 × f2 creates sum/difference frequencies with the "clang" of a real hat.
+    // f1=8000Hz, f2=10300Hz (inharmonic ratio ≈1.2875) → components at 2300Hz + 18300Hz.
+    static constexpr double kHatF1 = 8000.0;
+    static constexpr double kHatF2 = 10300.0;
+
     int avail = buf.getNumSamples() - start;
     int write = juce::jmin(len_ - pos_, avail);
 
     for (int i = 0; i < write; ++i) {
         double t = static_cast<double>(pos_ + i);
         float amp = velocity_ * static_cast<float>(std::exp(-t / decaySamples));
-        float noise = nextNoise();
-        float filtered = filterPrepared_ ? hatFilter_.processSample(noise) : noise;
-        ch[start + i] += amp * filtered;
+        phase_  += kHatF1 / sampleRate_;
+        phase2_ += kHatF2 / sampleRate_;
+        if (phase_  >= 1.0) phase_  -= 1.0;
+        if (phase2_ >= 1.0) phase2_ -= 1.0;
+        // Ring mod: product of two sines = metallic ring
+        float ring = static_cast<float>(std::sin(kTwoPi * phase_)
+                                      * std::sin(kTwoPi * phase2_));
+        // Mix with a little noise for non-pitched texture
+        float noise = nextNoise() * 0.15f;
+        ch[start + i] += 0.55f * amp * (ring + noise);
     }
     pos_ += write;
 }
