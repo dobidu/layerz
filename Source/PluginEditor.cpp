@@ -11,7 +11,8 @@ LayerzEditor::LayerzEditor(LayerzProcessor& p)
 {
     addAndMakeVisible(beatStrip_);
 
-    bool standalone = p.getClock().isStandaloneMode();
+    // wrapperType is reliable before prepareToPlay; isStandaloneMode() is not (set in prepareToPlay)
+    bool standalone = (p.wrapperType == juce::AudioProcessor::wrapperType_Standalone);
 
     // BPM slider — standalone only
     addChildComponent(bpmSlider_);

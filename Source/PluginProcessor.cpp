@@ -68,7 +68,8 @@ void LayerzProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     sequencer_.prepare(sampleRate);
     clock_.prepare(sampleRate, samplesPerBlock);
 
-    bool standalone = (getPlayHead() == nullptr);
+    // wrapperType is set by JUCE before constructor — reliable standalone detection
+    bool standalone = (wrapperType == wrapperType_Standalone);
     clock_.setStandaloneMode(standalone);
     if (standalone) clock_.setPlaying(true);
 }
