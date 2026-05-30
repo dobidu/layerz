@@ -63,7 +63,7 @@ void LayerzProcessor::seedTestPattern() {
         // BASS layer: C2/E2/G2/Bb2 on quarter beats
         Layer bassLayer;
         bassLayer.type = LayerType::BASS;
-        const int bassNotes[] = { 36, 40, 43, 46 }; // C2, E2, G2, Bb2
+        const int bassNotes[] = { 60, 64, 67, 70 }; // C4, E4, G4, Bb4 — within laptop speaker range
         const int bassSteps[] = { 0, 4, 8, 12 };
         for (int i = 0; i < 4; ++i) {
             Event e; e.step = bassSteps[i]; e.velocity = 0.8f; e.midi_note = bassNotes[i];
