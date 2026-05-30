@@ -2,7 +2,7 @@
 
 static constexpr int kTopBarHeight  = 48;
 static constexpr int kLayerRowH     = 26;  // placeholder rows for future layers
-static constexpr int kBeatStripH    = 304; // 24px header + 4×70px rows
+static constexpr int kBeatStripH    = 340; // 24px header + 4×70px rows + 36px groove panel
 
 LayerzEditor::LayerzEditor(LayerzProcessor& p)
     : AudioProcessorEditor(&p)
@@ -141,5 +141,5 @@ void LayerzEditor::resized() {
     // Pattern selector always visible — right-aligned in top bar
     patternSelector_.setBounds(getWidth() - 120, 4, 116, kTopBarHeight - 8);
     beatStrip_.setBounds(0, y, getWidth(), kBeatStripH);
-    bassStrip_.setBounds(0, y + kBeatStripH, getWidth(), 80);  // 24px header + 56px row
+    bassStrip_.setBounds(0, y + kBeatStripH, getWidth(), 116); // 24px header + 56px row + 36px groove
 }

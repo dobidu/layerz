@@ -19,11 +19,13 @@ BeatLayerStrip::BeatLayerStrip(LayerzProcessor& proc)
                     VoiceParamPanel(proc.projectStore(), 1),
                     VoiceParamPanel(proc.projectStore(), 2),
                     VoiceParamPanel(proc.projectStore(), 3) }
+    , groovePanel_(proc.projectStore(), LayerType::BEAT)
 {
     for (int i = 0; i < 4; ++i) {
         addAndMakeVisible(stepRows_[i]);
         addAndMakeVisible(paramPanels_[i]);
     }
+    addAndMakeVisible(groovePanel_);
     startTimerHz(30);
 }
 
@@ -56,6 +58,9 @@ void BeatLayerStrip::paint(juce::Graphics& g) {
 }
 
 void BeatLayerStrip::resized() {
+    // Reserve bottom for groove panel
+    int grooveY = kHeaderHeight + 4 * kRowHeight;
+    groovePanel_.setBounds(0, grooveY, getWidth(), kGrooveH);
     for (int i = 0; i < 4; ++i) {
         int y = kHeaderHeight + i * kRowHeight;
         paramPanels_[i].setBounds(0, y, kParamWidth, kRowHeight);
@@ -71,4 +76,5 @@ void BeatLayerStrip::timerCallback() {
         stepRows_[i].setCurrentStep(playStep);
         paramPanels_[i].updateFromSnapshot(*snap);
     }
+    groovePanel_.updateFromSnapshot(*snap);
 }

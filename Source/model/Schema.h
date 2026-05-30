@@ -135,6 +135,55 @@ inline bool operator==(const Layer& a, const Layer& b) {
 inline bool operator==(const Pattern& a, const Pattern& b) {
     return a.id == b.id && a.length_steps == b.length_steps && a.layers == b.layers;
 }
+// ── Template library ─────────────────────────────────────────────────────────
+
+struct TemplateDef {
+    const char* name;
+    Aesthetics  target;
+};
+
+static inline const TemplateDef kBeatTemplates[] = {
+    { "Lurch Soul",    { 0.6f,0.0f, 2,0.6f, 0,0.25f, 0.15f,42u } },
+    { "Push Hard",     { 0.0f,0.5f, 1,0.5f, 0,0.25f, 0.0f, 42u } },
+    { "Fracture Grid", { 0.1f,0.0f, 1,0.5f, 0,0.25f, 0.6f, 777u } },
+    { "Roll Fury",     { 0.2f,0.0f, 4,0.7f, 0,0.25f, 0.0f, 42u } },
+    { "Stutter Dub",   { 0.3f,0.0f, 1,0.5f, 3,0.2f,  0.0f, 42u } },
+};
+static inline constexpr int kNumBeatTemplates = 5;
+
+static inline const TemplateDef kBassTemplates[] = {
+    { "Slide",         { 0.4f,0.0f, 1,0.5f, 0,0.25f, 0.0f,  42u  } },
+    { "Stutter Bass",  { 0.1f,0.0f, 1,0.5f, 4,0.15f, 0.0f,  42u  } },
+    { "Sparse Push",   { 0.0f,0.3f, 1,0.5f, 0,0.25f, 0.3f,  100u } },
+};
+static inline constexpr int kNumBassTemplates = 3;
+
+// Find template by name + layer type. Returns nullptr if name empty or not found.
+inline const Aesthetics* findTemplate(const std::string& name, LayerType type) noexcept {
+    if (name.empty()) return nullptr;
+    const TemplateDef* table = (type == LayerType::BEAT) ? kBeatTemplates : kBassTemplates;
+    int n = (type == LayerType::BEAT) ? kNumBeatTemplates : kNumBassTemplates;
+    for (int i = 0; i < n; ++i)
+        if (name == table[i].name) return &table[i].target;
+    return nullptr;
+}
+
+// Interpolate between neutral (t=0) and template target (t=1).
+inline Aesthetics applyMorph(const Aesthetics& neutral, const Aesthetics& tgt, float t) {
+    Aesthetics out;
+    out.drag           = neutral.drag          + (tgt.drag          - neutral.drag)          * t;
+    out.push           = neutral.push          + (tgt.push          - neutral.push)          * t;
+    out.roll_mult      = (t > 0.5f) ? tgt.roll_mult      : neutral.roll_mult;
+    out.roll_vel_decay = neutral.roll_vel_decay + (tgt.roll_vel_decay - neutral.roll_vel_decay) * t;
+    out.stutter_reps   = (t > 0.5f) ? tgt.stutter_reps   : neutral.stutter_reps;
+    out.stutter_gate   = neutral.stutter_gate  + (tgt.stutter_gate  - neutral.stutter_gate)  * t;
+    out.fracture_prob  = neutral.fracture_prob + (tgt.fracture_prob  - neutral.fracture_prob) * t;
+    out.fracture_seed  = tgt.fracture_seed;
+    return out;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 inline bool operator==(const Project& a, const Project& b) {
     return a.schema_version      == b.schema_version
         && std::abs(a.tempo        - b.tempo)        < 1e-9

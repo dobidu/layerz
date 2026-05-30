@@ -2,6 +2,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "StepRow.h"
 #include "VoiceParamPanel.h"
+#include "GroovePanel.h"
 
 // Forward declaration to avoid circular includes
 class LayerzProcessor;
@@ -21,8 +22,10 @@ private:
     LayerzProcessor& proc_;
     StepRow         stepRows_[4];
     VoiceParamPanel paramPanels_[4];
+    GroovePanel     groovePanel_;
 
     static constexpr int kParamPanelWidth = 120;
+    static constexpr int kGrooveH         = 36;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BeatLayerStrip)
 };

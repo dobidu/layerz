@@ -6,9 +6,10 @@ static const juce::Colour kBg   (0xFF181818u);
 static const juce::Colour kSep  (0xFF2E2E2Eu);
 
 BassLayerStrip::BassLayerStrip(LayerzProcessor& proc)
-    : proc_(proc), stepRow_(proc.projectStore())
+    : proc_(proc), stepRow_(proc.projectStore()), groovePanel_(proc.projectStore(), LayerType::BASS)
 {
     addAndMakeVisible(stepRow_);
+    addAndMakeVisible(groovePanel_);
     startTimerHz(30);
 }
 
@@ -28,7 +29,9 @@ void BassLayerStrip::paint(juce::Graphics& g) {
 }
 
 void BassLayerStrip::resized() {
-    stepRow_.setBounds(0, kHeaderH, getWidth(), getHeight() - kHeaderH);
+    int h = getHeight();
+    groovePanel_.setBounds(0, h - kGrooveH, getWidth(), kGrooveH);
+    stepRow_.setBounds(0, kHeaderH, getWidth(), h - kHeaderH - kGrooveH);
 }
 
 void BassLayerStrip::timerCallback() {
@@ -36,4 +39,5 @@ void BassLayerStrip::timerCallback() {
     if (snap->patterns.empty()) return;
     stepRow_.updateFromSnapshot(*snap);
     stepRow_.setCurrentStep(proc_.currentPlayStep());
+    groovePanel_.updateFromSnapshot(*snap);
 }

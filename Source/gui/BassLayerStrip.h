@@ -1,6 +1,7 @@
 #pragma once
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "PitchedStepRow.h"
+#include "GroovePanel.h"
 
 class LayerzProcessor;
 
@@ -16,7 +17,9 @@ public:
 private:
     LayerzProcessor& proc_;
     PitchedStepRow   stepRow_;
+    GroovePanel      groovePanel_;
     static constexpr int kHeaderH = 24;
+    static constexpr int kGrooveH = 36;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BassLayerStrip)
 };

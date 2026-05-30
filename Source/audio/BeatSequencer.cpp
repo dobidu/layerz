@@ -50,13 +50,20 @@ void BeatSequencer::process(const Project& snap,
             if (layer.type != LayerType::BEAT) continue;
             if (layer.drum_tracks.empty()) continue;
 
+            // Compute effective aesthetics from template + morph (guard empty name)
+            Aesthetics neutral{};
+            const Aesthetics* tpl = findTemplate(layer.template_name, LayerType::BEAT);
+            Aesthetics beatAes = (tpl && layer.morph_amount > 0.0f)
+                ? applyMorph(neutral, *tpl, layer.morph_amount)
+                : layer.aesthetics;
+
             for (const auto& track : layer.drum_tracks) {
                 if (track.mute) continue;
                 for (const auto& event : track.events) {
                     if (event.step != beat_step) continue;
                     float vel = event.velocity * juce::jlimit(0.0f, 1.0f, track.level);
                     int n = resolver_.resolveEvent(
-                        false, track.voice_type, event, layer.aesthetics,
+                        false, track.voice_type, event, beatAes,
                         nullptr, vel, track.param1,
                         beatEv.sample_offset, blockSize, stepPeriodSamples,
                         resolvedBuf_, kMaxResolved);
@@ -71,10 +78,16 @@ void BeatSequencer::process(const Project& snap,
         // ── BASS layer ────────────────────────────────────────────────────────
         for (const auto& layer : pattern.layers) {
             if (layer.type != LayerType::BASS) continue;
+            // Apply template + morph for BASS
+            Aesthetics neutral{};
+            const Aesthetics* bTpl = findTemplate(layer.template_name, LayerType::BASS);
+            Aesthetics bassAes = (bTpl && layer.morph_amount > 0.0f)
+                ? applyMorph(neutral, *bTpl, layer.morph_amount)
+                : layer.aesthetics;
             for (const auto& event : layer.events) {
                 if (event.step != beat_step || event.midi_note < 0) continue;
                 int n = resolver_.resolveEvent(
-                    true, "bass", event, layer.aesthetics,
+                    true, "bass", event, bassAes,
                     &layer.bass_params, event.velocity, layer.bass_params.volume,
                     beatEv.sample_offset, blockSize, stepPeriodSamples,
                     resolvedBuf_, kMaxResolved);

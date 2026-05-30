@@ -47,6 +47,7 @@ target_sources(LAYERZ PRIVATE
     Source/gui/PatternSelector.cpp
     Source/gui/PitchedStepRow.cpp
     Source/gui/BassLayerStrip.cpp
+    Source/gui/GroovePanel.cpp
     Source/gui/VoiceParamPanel.cpp
     Source/gui/BeatLayerStrip.cpp
 )
@@ -91,6 +92,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         Source/gui/PatternSelector.cpp
         Source/gui/PitchedStepRow.cpp
         Source/gui/BassLayerStrip.cpp
+        Source/gui/GroovePanel.cpp
         Source/gui/VoiceParamPanel.cpp
         Source/gui/BeatLayerStrip.cpp
         PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra;-Werror"
