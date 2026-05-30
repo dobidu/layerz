@@ -34,9 +34,17 @@ void PatternSelector::timerCallback() {
     int playing = proc_.chainManager().currentPatternIndex();
     auto snap   = proc_.projectStore().snapshot();
     int numPat  = static_cast<int>(snap->patterns.size());
+
+    // Sync active_pattern_index to playing index so all UI shows the active pattern
+    if (snap->active_pattern_index != playing) {
+        proc_.projectStore().postMutation([playing](Project& p) {
+            p.active_pattern_index = juce::jlimit(0, (int)p.patterns.size()-1, playing);
+        });
+    }
+
     for (int i = 0; i < 4; ++i) {
-        bool exists  = i < numPat;
-        bool active  = (i == playing);
+        bool exists = i < numPat;
+        bool active = (i == playing);
         patBtns_[i].setVisible(exists);
         patBtns_[i].setToggleState(active, juce::dontSendNotification);
     }
