@@ -41,6 +41,8 @@ public:
     // Standalone play control
     void setPlaying(bool playing) noexcept { playing_ = playing; }
     bool isPlaying() const noexcept { return playing_; }
+    // Returns samples per beat at current BPM — used by BeatSequencer for groove offsets
+    double samplesPerBeat() const noexcept { return samplesPerBeat_; }
 
 private:
     double sampleRate_       = 44100.0;

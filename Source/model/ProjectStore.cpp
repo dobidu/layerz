@@ -94,8 +94,15 @@ static juce::Result varToPatternChainEntry(const juce::var& v, PatternChainEntry
 
 static juce::var aestheticsToVar(const Aesthetics& a) {
     auto* obj = new juce::DynamicObject();
-    obj->setProperty("drag", a.drag);
-    obj->setProperty("push", a.push);
+    obj->setProperty("drag",          a.drag);
+    obj->setProperty("push",          a.push);
+    obj->setProperty("roll_mult",      a.roll_mult);
+    obj->setProperty("roll_vel_decay", a.roll_vel_decay);
+    obj->setProperty("stutter_reps",   a.stutter_reps);
+    obj->setProperty("stutter_gate",   a.stutter_gate);
+    obj->setProperty("fracture_prob",  a.fracture_prob);
+    // fracture_seed: store as int64 to avoid uint32 sign ambiguity in juce::var
+    obj->setProperty("fracture_seed",  static_cast<juce::int64>(a.fracture_seed));
     return obj;
 }
 
@@ -121,8 +128,10 @@ static juce::var layerToVar(const Layer& l) {
     obj->setProperty("events", evs);
     juce::Array<juce::var> dts;
     for (const auto& dt : l.drum_tracks) dts.add(drumTrackToVar(dt));
-    obj->setProperty("drum_tracks", dts);
-    obj->setProperty("bass_params", bassVoiceParamsToVar(l.bass_params));
+    obj->setProperty("drum_tracks",    dts);
+    obj->setProperty("bass_params",    bassVoiceParamsToVar(l.bass_params));
+    obj->setProperty("template_name",  juce::String(l.template_name));
+    obj->setProperty("morph_amount",   l.morph_amount);
     return obj;
 }
 
@@ -165,8 +174,14 @@ static juce::Result varToEvent(const juce::var& v, Event& out) {
 
 static juce::Result varToAesthetics(const juce::var& v, Aesthetics& out) {
     if (! v.isObject()) return juce::Result::fail("Aesthetics is not an object");
-    out.drag = static_cast<float>(static_cast<double>(v["drag"]));
-    out.push = static_cast<float>(static_cast<double>(v["push"]));
+    out.drag          = static_cast<float>(static_cast<double>(v["drag"]));
+    out.push          = static_cast<float>(static_cast<double>(v["push"]));
+    out.roll_mult      = static_cast<int>(v["roll_mult"]);
+    out.roll_vel_decay = static_cast<float>(static_cast<double>(v["roll_vel_decay"]));
+    out.stutter_reps   = static_cast<int>(v["stutter_reps"]);
+    out.stutter_gate   = static_cast<float>(static_cast<double>(v["stutter_gate"]));
+    out.fracture_prob  = static_cast<float>(static_cast<double>(v["fracture_prob"]));
+    out.fracture_seed  = static_cast<uint32_t>(static_cast<juce::int64>(v["fracture_seed"]));
     return juce::Result::ok();
 }
 
@@ -209,6 +224,9 @@ static juce::Result varToLayer(const juce::var& v, Layer& out) {
     // Missing bass_params → default-initialised (backward compat)
     if (v["bass_params"].isObject())
         if (auto r = varToBassVoiceParams(v["bass_params"], out.bass_params); r.failed()) return r;
+    // template_name + morph_amount — missing in older files → safe defaults
+    out.template_name = v["template_name"].toString().toStdString();
+    out.morph_amount  = static_cast<float>(static_cast<double>(v["morph_amount"]));
     return juce::Result::ok();
 }
 

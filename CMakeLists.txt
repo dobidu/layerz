@@ -42,6 +42,7 @@ target_sources(LAYERZ PRIVATE
     Source/audio/BeatSequencer.cpp
     Source/audio/MonoSynth.cpp
     Source/audio/ChainManager.cpp
+    Source/audio/AestheticResolver.cpp
     Source/gui/StepRow.cpp
     Source/gui/PatternSelector.cpp
     Source/gui/PitchedStepRow.cpp
@@ -85,6 +86,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         Source/audio/BeatSequencer.cpp
         Source/audio/MonoSynth.cpp
         Source/audio/ChainManager.cpp
+        Source/audio/AestheticResolver.cpp
         Source/gui/StepRow.cpp
         Source/gui/PatternSelector.cpp
         Source/gui/PitchedStepRow.cpp

@@ -15,9 +15,18 @@ struct Event {
 };
 
 struct Aesthetics {
-    float drag = 0.0f;
-    float push = 0.0f;
-    // roll, stutter, fracture added in F3
+    // DRAG / PUSH — micro-timing offsets
+    float drag  = 0.0f;  // 0-1: fraction of step period to lag behind grid
+    float push  = 0.0f;  // 0-1: fraction of step period to push ahead of grid
+    // ROLL — step density multiplier
+    int   roll_mult      = 1;     // 1=off, 2/3/4/8 = subdivisions per step
+    float roll_vel_decay = 0.5f;  // velocity multiplier per sub-hit (0-1)
+    // STUTTER — gated short repetitions
+    int   stutter_reps   = 0;     // 0=off, 1-8 repetitions
+    float stutter_gate   = 0.25f; // gate time as fraction of step period (0-1)
+    // FRACTURE — probabilistic firing
+    float    fracture_prob = 0.0f;   // 0-1: per-step probability to fire
+    uint32_t fracture_seed = 12345u; // LCG seed; reset at pattern loop start
 };
 
 struct DrumTrack {
@@ -56,6 +65,8 @@ struct Layer {
     std::vector<DrumTrack> drum_tracks;   // BEAT layer
     BassVoiceParams     bass_params;      // BASS layer
     Aesthetics          aesthetics;
+    std::string         template_name;    // "" = no template; F3 template presets
+    float               morph_amount = 0.0f; // 0=neutral, 1=full template
 };
 
 struct Pattern {
@@ -84,8 +95,14 @@ inline bool operator==(const Event& a, const Event& b) {
         && std::abs(a.velocity  -  b.velocity) < 1e-6f;
 }
 inline bool operator==(const Aesthetics& a, const Aesthetics& b) {
-    return std::abs(a.drag - b.drag) < 1e-6f
-        && std::abs(a.push - b.push) < 1e-6f;
+    return std::abs(a.drag         - b.drag)         < 1e-6f
+        && std::abs(a.push         - b.push)         < 1e-6f
+        && a.roll_mult             == b.roll_mult
+        && std::abs(a.roll_vel_decay - b.roll_vel_decay) < 1e-6f
+        && a.stutter_reps          == b.stutter_reps
+        && std::abs(a.stutter_gate - b.stutter_gate) < 1e-6f
+        && std::abs(a.fracture_prob - b.fracture_prob) < 1e-6f
+        && a.fracture_seed         == b.fracture_seed;
 }
 inline bool operator==(const DrumTrack& a, const DrumTrack& b) {
     return a.voice_type == b.voice_type
@@ -111,7 +128,9 @@ inline bool operator==(const PatternChainEntry& a, const PatternChainEntry& b) {
 inline bool operator==(const Layer& a, const Layer& b) {
     return a.type == b.type && a.voice_ref == b.voice_ref
         && a.events == b.events && a.drum_tracks == b.drum_tracks
-        && a.bass_params == b.bass_params && a.aesthetics == b.aesthetics;
+        && a.bass_params == b.bass_params && a.aesthetics == b.aesthetics
+        && a.template_name == b.template_name
+        && std::abs(a.morph_amount - b.morph_amount) < 1e-6f;
 }
 inline bool operator==(const Pattern& a, const Pattern& b) {
     return a.id == b.id && a.length_steps == b.length_steps && a.layers == b.layers;

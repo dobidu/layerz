@@ -19,8 +19,9 @@ public:
 
     // BASS voice (audio thread)
     void triggerBass(int midiNote, float velocity, const BassVoiceParams& p) noexcept;
+    // Retrigger without phase reset — for STUTTER sub-events (no click artifact)
+    void retriggerBass(float velocity, const BassVoiceParams& p) noexcept;
     void releaseBass() noexcept;
-    // Renders numSamples of BASS into buf ch0 starting at startSample.
     void processBass(juce::AudioBuffer<float>& buf, int startSample, int numSamples) noexcept;
 
 private:

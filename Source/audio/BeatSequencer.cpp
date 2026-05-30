@@ -2,11 +2,17 @@
 
 void BeatSequencer::prepare(double sampleRate) noexcept {
     sampleRate_ = sampleRate;
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate       = sampleRate;
+    spec.maximumBlockSize = 4096;
+    spec.numChannels      = 1;
+    resolver_.prepare(sampleRate, 4096);
 }
 
 void BeatSequencer::process(const Project& snap,
                              int patternIndex,
                              const BeatEvents& beatEvents,
+                             double stepPeriodSamples,
                              juce::AudioBuffer<float>& buf,
                              VoiceBank& bank) noexcept {
     if (snap.patterns.empty()) return;
@@ -14,49 +20,92 @@ void BeatSequencer::process(const Project& snap,
     const auto& pattern = snap.patterns[static_cast<std::size_t>(pi)];
     if (pattern.layers.empty()) return;
 
-    // ── BEAT layer ──────────────────────────────────────────────────────────
-    for (const auto& layer : pattern.layers) {
-        if (layer.type != LayerType::BEAT) continue;
-        if (layer.drum_tracks.empty()) continue;
+    int blockSize = buf.getNumSamples();
 
-        for (int bi = 0; bi < beatEvents.count; ++bi) {
-            const auto& beatEv = beatEvents.data[bi];
-            int beat_step = beatEv.beat_index % pattern.length_steps;
+    // Step 1: drain carry-forward events from PREVIOUS block FIRST
+    int nPending = resolver_.drainPending(resolvedBuf_, kMaxResolved);
+    for (int i = 0; i < nPending; ++i)
+        dispatchResolved(resolvedBuf_[i], buf, bank);
+
+    // Step 2: reset FRACTURE seed at pattern loop start (AFTER drain — ordering critical)
+    for (int bi = 0; bi < beatEvents.count; ++bi) {
+        if (beatEvents.data[bi].beat_index % pattern.length_steps == 0) {
+            // Find first BEAT layer seed for reset (use first layer's fracture_seed)
+            for (const auto& layer : pattern.layers)
+                if (layer.type == LayerType::BEAT && !layer.drum_tracks.empty()) {
+                    resolver_.resetFractureSeed(layer.aesthetics.fracture_seed);
+                    break;
+                }
+            break;
+        }
+    }
+
+    // Step 3: process new beat events with aesthetics
+    for (int bi = 0; bi < beatEvents.count; ++bi) {
+        const auto& beatEv = beatEvents.data[bi];
+        int beat_step = beatEv.beat_index % pattern.length_steps;
+
+        // ── BEAT layer ────────────────────────────────────────────────────────
+        for (const auto& layer : pattern.layers) {
+            if (layer.type != LayerType::BEAT) continue;
+            if (layer.drum_tracks.empty()) continue;
 
             for (const auto& track : layer.drum_tracks) {
                 if (track.mute) continue;
                 for (const auto& event : track.events) {
-                    if (event.step == beat_step) {
-                        // Apply level from snapshot (not VoiceBank's stale array)
-                        float vel = event.velocity * juce::jlimit(0.0f, 1.0f, track.level);
-                        bank.trigger(track.voice_type, vel, track.param1,
-                                     beatEv.sample_offset, buf);
-                        break;
-                    }
-                }
-            }
-        }
-        break; // only one BEAT layer
-    }
-
-    // ── BASS layer (simple: trigger at block start, render full block) ──────
-    for (const auto& layer : pattern.layers) {
-        if (layer.type != LayerType::BASS) continue;
-
-        // Check if any BASS event fires this block; trigger if so
-        for (int bi = 0; bi < beatEvents.count; ++bi) {
-            const auto& beatEv = beatEvents.data[bi];
-            int beat_step = beatEv.beat_index % pattern.length_steps;
-            for (const auto& event : layer.events) {
-                if (event.step == beat_step && event.midi_note >= 0) {
-                    bank.triggerBass(event.midi_note, event.velocity, layer.bass_params);
+                    if (event.step != beat_step) continue;
+                    float vel = event.velocity * juce::jlimit(0.0f, 1.0f, track.level);
+                    int n = resolver_.resolveEvent(
+                        false, track.voice_type, event, layer.aesthetics,
+                        nullptr, vel, track.param1,
+                        beatEv.sample_offset, blockSize, stepPeriodSamples,
+                        resolvedBuf_, kMaxResolved);
+                    for (int k = 0; k < n; ++k)
+                        dispatchResolved(resolvedBuf_[k], buf, bank);
                     break;
                 }
             }
+            break;
         }
 
-        // Always render full block (sustain or new note)
-        bank.processBass(buf, 0, buf.getNumSamples());
-        break;
+        // ── BASS layer ────────────────────────────────────────────────────────
+        for (const auto& layer : pattern.layers) {
+            if (layer.type != LayerType::BASS) continue;
+            for (const auto& event : layer.events) {
+                if (event.step != beat_step || event.midi_note < 0) continue;
+                int n = resolver_.resolveEvent(
+                    true, "bass", event, layer.aesthetics,
+                    &layer.bass_params, event.velocity, layer.bass_params.volume,
+                    beatEv.sample_offset, blockSize, stepPeriodSamples,
+                    resolvedBuf_, kMaxResolved);
+                for (int k = 0; k < n; ++k)
+                    dispatchResolved(resolvedBuf_[k], buf, bank);
+                break;
+            }
+            break;
+        }
+    }
+
+    // Step 4: render sustaining BASS across blocks with no new trigger
+    bank.processBass(buf, 0, blockSize);
+}
+
+void BeatSequencer::dispatchResolved(const ResolvedEvent& ev,
+                                      juce::AudioBuffer<float>& buf,
+                                      VoiceBank& bank) noexcept {
+    int offset = juce::jlimit(0, buf.getNumSamples()-1, ev.sample_offset);
+    if (ev.is_bass) {
+        if (ev.bass_params) {
+            if (ev.velocity < 0.0f) {
+                // STUTTER retrigger (negative velocity flag): no phase reset
+                bank.retriggerBass(-ev.velocity, *ev.bass_params);
+            } else {
+                bank.releaseBass();
+                bank.triggerBass(ev.midi_note, ev.velocity, *ev.bass_params);
+            }
+            bank.processBass(buf, offset, buf.getNumSamples() - offset);
+        }
+    } else {
+        bank.trigger(ev.voice_type, ev.velocity, ev.param1, offset, buf);
     }
 }

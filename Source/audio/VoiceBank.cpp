@@ -24,6 +24,9 @@ void VoiceBank::prepare(double sampleRate, int maxBlockSize) noexcept {
 void VoiceBank::triggerBass(int midiNote, float velocity, const BassVoiceParams& p) noexcept {
     bass_.trigger(midiNote, velocity, p);
 }
+void VoiceBank::retriggerBass(float velocity, const BassVoiceParams& p) noexcept {
+    bass_.triggerRetain(velocity, p);
+}
 void VoiceBank::releaseBass() noexcept { bass_.release(); }
 void VoiceBank::processBass(juce::AudioBuffer<float>& buf, int startSample, int n) noexcept {
     bass_.process(buf, startSample, n);
