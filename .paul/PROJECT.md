@@ -13,9 +13,9 @@ Producers get the immediacy of a groovebox and the aesthetic reach of a full DAW
 | Attribute | Value |
 |-----------|-------|
 | Type | Application |
-| Version | 0.2.0 |
-| Status | F1 BEAT layer complete |
-| Last Updated | 2026-05-29 |
+| Version | 0.3.0 |
+| Status | F2 BASS + multi-pattern complete |
+| Last Updated | 2026-05-30 |
 
 ## Requirements
 
@@ -39,12 +39,17 @@ Producers get the immediacy of a groovebox and the aesthetic reach of a full DAW
 - [x] F1: BeatSequencer — reads DrumTrack events, dispatches per beat offset — v0.2.0
 - [x] F1: BEAT layer UI — 4 drum rows, step buttons, level/mute/param1, step indicator — v0.2.0
 - [x] F1: Schema DrumTrack, stereo output, AudioThreadGuard, standalone transport — v0.2.0
+- [x] F2: MonoSynth BASS voice (minimal oscillator; envelope in F3) — v0.3.0
+- [x] F2: ChainManager (A→B bar-boundary advance), pattern selector UI — v0.3.0
+- [x] F2: PitchedStepRow (note popup), BassLayerStrip (amber) — v0.3.0
+- [x] F2: save/load .layerz (Cmd+S/O), saveToFile() atomic write — v0.3.0
+- [x] F2: BeatSequencer reads patternIndex; releases bass on stop — v0.3.0
 
 ### Active (In Progress)
 None.
 
 ### Planned (Next)
-- F2: BASS layer + multi-pattern + save/load
+- F3: Groove engine (DRAG/PUSH/ROLL/STUTTER/FRACTURE, template library)
 - F2: BASS layer + multi-pattern + save/load
 - F3: Groove engine (DRAG/PUSH/ROLL/STUTTER/FRACTURE, template library)
 - F4: HARMONIC + MELODIC layers

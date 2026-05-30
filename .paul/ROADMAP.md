@@ -8,7 +8,7 @@ LAYERZ v1 ships as a standalone groovebox + VST3/AU/LV2 plugin across Linux/macO
 
 **v1.0 Initial Release** (v1.0.0)
 Status: In progress
-Phases: 2 of 8 complete
+Phases: 3 of 8 complete
 
 ## Phases
 
@@ -16,7 +16,7 @@ Phases: 2 of 8 complete
 |-------|------|-------|--------|-----------|
 | 1 (F0) | Scaffolding + Spikes | 3 | ✅ Complete | 2026-05-29 |
 | 2 (F1) | BEAT Layer | 2 | ✅ Complete | 2026-05-29 |
-| 3 (F2) | BASS Layer + Multi-pattern | 3 | Planning | - |
+| 3 (F2) | BASS Layer + Multi-pattern | 3 | ✅ Complete | 2026-05-30 |
 | 4 (F3) | Groove Engine | TBD | Not started | - |
 | 5 (F4) | HARMONIC + MELODIC | TBD | Not started | - |
 | 6 (F5) | Cross-cutting FX & Spatial | TBD | Not started | - |
@@ -73,9 +73,9 @@ Phases: 2 of 8 complete
 **Research:** Unlikely
 
 **Plans:**
-- [ ] 03-01: MonoSynth voice (saw/ADSR/LP/glide) + Schema F2 extensions + MIDI routing
-- [ ] 03-02: ChainManager (multi-pattern engine), pattern selector UI, save/load Cmd+S/O
-- [ ] 03-03: PitchedStepRow (note popup), BassVoiceParamPanel, BassLayerStrip
+- [x] 03-01: MonoSynth (minimal oscillator), Schema F2 extensions, MIDI routing
+- [x] 03-02: ChainManager, PatternSelector UI, save/load Cmd+S/O, saveToFile impl
+- [x] 03-03: PitchedStepRow (note popup), BassLayerStrip (amber), stop fix
 
 ### Phase 4 (F3): Groove Engine
 

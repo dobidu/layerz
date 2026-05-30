@@ -10,21 +10,21 @@ See: .paul/PROJECT.md (updated 2026-05-28)
 ## Current Position
 
 Milestone: v1.0 Initial Release (v1.0.0)
-Phase: 3 of 8 (F2 — BASS Layer + Multi-pattern) — Planning
-Plan: 03-01 + 03-02 + 03-03 created + audited, awaiting approval
-Status: PLAN created and audited, ready for APPLY
-Last activity: 2026-05-29 — Enterprise audit: 5 must-have + 3 strongly-recommended applied
+Phase: 4 of 8 (F3 — Groove Engine) — Not started
+Plan: None yet
+Status: Ready to plan
+Last activity: 2026-05-30 — Phase 3 (F2) complete, transitioned to Phase 4
 
 Progress:
-- Milestone: [██░░░░░░░░] 25%
-- Phase 2: [██████████] 100% ✅
+- Milestone: [███░░░░░░░] 37%
+- Phase 3: [██████████] 100% ✅
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ○        ○     [Plans created, awaiting approval]
+  ✓        ✓        ✓     [Phase 3 complete — ready for next PLAN]
 ```
 
 ## Accumulated Context
@@ -33,7 +33,9 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Decision | Phase | Impact |
 |----------|-------|--------|
 | Thread-safety: C++17 mutex retained | F1 deviation | macOS SDK lacks C++20 atomic<shared_ptr>; revisit when SDK updates |
-| Hat synthesis: ring modulation | F1 | f1×f2 inharmonic sines; HP noise removed; dead code in DrumVoice (hatFilter_) |
+| Hat synthesis: ring modulation | F1 | f1×f2 inharmonic sines; HP noise removed |
+| MonoSynth: minimal oscillator only | F2 deviation | No ADSR/filter yet; stale saved state was root cause of silence; add envelope in F3 |
+| saveToFile() was missing impl | F2 bug | Declared in header since F0 but never written; added atomic tmp+rename |
 | PROFILE_PLUGIN: 12 voices, 24 grains | F0 | Hardcoded in ProfileConfig.h; recalibrate post-F1 with real Faust |
 | PROFILE_STANDALONE: 24 voices, 40 grains | F0 | Same basis |
 | UserConfig separate from Project | F0 | LLM key + profile override in platform config dir, never .layerz |
@@ -47,14 +49,14 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-29
-Stopped at: Phase 3 (F2) plans created — 03-01 + 03-02 + 03-03
-Next action: Review plans, then /paul:apply .paul/phases/03-bass-multipattern/
+Last session: 2026-05-30
+Stopped at: Phase 3 (F2) UNIFY complete — transitioned to Phase 4 (F3)
+Next action: /paul:plan for Phase 4 (F3): Groove Engine
 Resume context:
-  03-01 (wave 1): MonoSynth + Schema extensions + MIDI routing
-  03-02 (wave 2, depends 03-01): ChainManager + multi-pattern engine + save/load
-  03-03 (wave 2, depends 03-01, parallel to 03-02): PitchedStepRow + BassLayerStrip
-  Enterprise audit enabled — run /paul:audit before apply.
+  F2 shipped: MonoSynth BASS, ChainManager, pattern selector, PitchedStepRow, save/load.
+  MonoSynth is minimal (oscillator only) — add ADSR/filter in F3 alongside groove engine.
+  hatFilter_ in DrumVoice is dead code after ring-mod change — remove in F5 cleanup.
+  F3 adds: DRAG/PUSH/ROLL/STUTTER/FRACTURE groove aesthetics + template library + morph knob.
 
 ---
 *STATE.md — Updated after every significant action*
