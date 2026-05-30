@@ -17,7 +17,7 @@ Phases: 3 of 8 complete
 | 1 (F0) | Scaffolding + Spikes | 3 | ✅ Complete | 2026-05-29 |
 | 2 (F1) | BEAT Layer | 2 | ✅ Complete | 2026-05-29 |
 | 3 (F2) | BASS Layer + Multi-pattern | 3 | ✅ Complete | 2026-05-30 |
-| 4 (F3) | Groove Engine | TBD | Not started | - |
+| 4 (F3) | Groove Engine | 3 | Planning | - |
 | 5 (F4) | HARMONIC + MELODIC | TBD | Not started | - |
 | 6 (F5) | Cross-cutting FX & Spatial | TBD | Not started | - |
 | 7 (F6) | LLM Bridge | TBD | Not started | - |
@@ -84,7 +84,9 @@ Phases: 3 of 8 complete
 **Research:** Likely — F3.99 spike (groove accuracy under host clock)
 
 **Plans:**
-- [ ] 04-01: TBD during /paul:plan
+- [ ] 04-01: F3.99 spike — carry-forward queue strategy for sub-block micro-timing
+- [ ] 04-02: AestheticResolver (DRAG/PUSH/ROLL/STUTTER/FRACTURE) + MonoSynth ADSR
+- [ ] 04-03: Template library (5 BEAT + 3 BASS), Morph knob, GroovePanel UI, validation gate
 
 ### Phase 5 (F4): HARMONIC + MELODIC
 
