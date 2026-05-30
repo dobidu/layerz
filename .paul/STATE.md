@@ -51,13 +51,14 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-30
-Stopped at: Phase 4 (F3) plans created — 04-01 + 04-02 + 04-03
-Next action: Review plans, then /paul:apply .paul/phases/04-groove-engine/
+Stopped at: 04-03 APPLY complete — human-verify checkpoint PENDING (groove engine test)
+Next action: User tests groove engine → "approved" → write SUMMARYs → /paul:unify
 Resume context:
-  04-01 (research): F3.99 spike — carry-forward queue vs clamp vs bar-precompute
-  04-02 (execute, wave 2): AestheticResolver (DRAG/PUSH/ROLL/STUTTER/FRACTURE) + MonoSynth ADSR
-  04-03 (execute, wave 3, human-verify): Template library + Morph knob + validation recording
-  Enterprise audit enabled.
+  LAYERZ is built and running. Groove engine (DRAG/PUSH/ROLL/STUTTER/FRACTURE) live.
+  Template library (5 BEAT + 3 BASS) + GroovePanel morph knob in each strip.
+  Checkpoint: user must test Lurch Soul/Fracture Grid/Roll Fury/Stutter Bass + record 30s.
+  After approval: write 04-01/02/03 SUMMARYs, update STATE, run /paul:unify.
+  See .paul/HANDOFF-2026-05-30.md for full context.
 
 ---
 *STATE.md — Updated after every significant action*
