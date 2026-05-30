@@ -13,8 +13,8 @@ Producers get the immediacy of a groovebox and the aesthetic reach of a full DAW
 | Attribute | Value |
 |-----------|-------|
 | Type | Application |
-| Version | 0.1.0 |
-| Status | Scaffolding complete |
+| Version | 0.2.0 |
+| Status | F1 BEAT layer complete |
 | Last Updated | 2026-05-29 |
 
 ## Requirements
@@ -35,12 +35,16 @@ Producers get the immediacy of a groovebox and the aesthetic reach of a full DAW
 - [x] F0: ProfileConfig (PLUGIN: 12v/24g, STANDALONE: 24v/40g — F0.99 spike, Lenovo-calibrated) — v0.1.0
 - [x] F0: UserConfig (LLM opt-in default=false, profile override, platform config dir) — v0.1.0
 - [x] F0: Performance budget spike + thread-safety model decided (lock-free-snapshot) — v0.1.0
+- [x] F1: DrumVoice synthesis — kick/snare/hat(ring-mod)/perc via JUCE DSP — v0.2.0
+- [x] F1: BeatSequencer — reads DrumTrack events, dispatches per beat offset — v0.2.0
+- [x] F1: BEAT layer UI — 4 drum rows, step buttons, level/mute/param1, step indicator — v0.2.0
+- [x] F1: Schema DrumTrack, stereo output, AudioThreadGuard, standalone transport — v0.2.0
 
 ### Active (In Progress)
 None.
 
 ### Planned (Next)
-- F1: BEAT layer (drum voices, step sequencer, layer strip UI)
+- F2: BASS layer + multi-pattern + save/load
 - F2: BASS layer + multi-pattern + save/load
 - F3: Groove engine (DRAG/PUSH/ROLL/STUTTER/FRACTURE, template library)
 - F4: HARMONIC + MELODIC layers
@@ -82,7 +86,8 @@ None.
 | JSON project model (.layerz) | Serializable, diffable, LLM-readable canonical state | Pre-init | Active |
 | LLM bridge provider-neutral | PatternPatch protocol; Anthropic API as first target | Pre-init | Active |
 | Two profiles: PLUGIN / STANDALONE | Different resource caps, same codebase | Pre-init | Active |
-| Thread-safety model | Lock-free snapshot (C++17 short-mutex variant; upgrade to C++20 atomic<shared_ptr> in F1) | 2026-05-29 | Active |
+| Thread-safety model | C++17 short-mutex retained — macOS SDK lacks C++20 atomic<shared_ptr>. Revisit post-SDK update. | 2026-05-29 | Active |
+| Hat synthesis | Ring modulation of inharmonic sines (8kHz × 10.3kHz) — better metallic character than HP noise | 2026-05-29 | Active |
 | PROFILE_PLUGIN caps | max_voices=12, max_grains=24 — Lenovo i7-8565U bench, 10x real-cost multiplier. Preliminary; recalibrate post-F1 | 2026-05-29 | Active |
 | PROFILE_STANDALONE caps | max_voices=24, max_grains=40 — same basis | 2026-05-29 | Active |
 | UserConfig separate from Project | LLM key + profile override live in platform config dir, never in .layerz files | 2026-05-29 | Active |

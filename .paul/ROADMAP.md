@@ -8,14 +8,14 @@ LAYERZ v1 ships as a standalone groovebox + VST3/AU/LV2 plugin across Linux/macO
 
 **v1.0 Initial Release** (v1.0.0)
 Status: In progress
-Phases: 1 of 8 complete
+Phases: 2 of 8 complete
 
 ## Phases
 
 | Phase | Name | Plans | Status | Completed |
 |-------|------|-------|--------|-----------|
 | 1 (F0) | Scaffolding + Spikes | 3 | ✅ Complete | 2026-05-29 |
-| 2 (F1) | BEAT Layer | 2 | Planning | - |
+| 2 (F1) | BEAT Layer | 2 | ✅ Complete | 2026-05-29 |
 | 3 (F2) | BASS Layer + Multi-pattern | TBD | Not started | - |
 | 4 (F3) | Groove Engine | TBD | Not started | - |
 | 5 (F4) | HARMONIC + MELODIC | TBD | Not started | - |
@@ -63,8 +63,8 @@ Phases: 1 of 8 complete
 - Per-layer level + mute/solo
 
 **Plans:**
-- [ ] 02-01: Drum engine — DrumVoice (JUCE DSP), VoiceBank, BeatSequencer, AudioThreadGuard
-- [ ] 02-02: BEAT layer UI — StepRow, VoiceParamPanel, BeatLayerStrip, Editor rewrite
+- [x] 02-01: DrumVoice (kick/snare/hat ring-mod/perc), VoiceBank, BeatSequencer, AudioThreadGuard
+- [x] 02-02: StepRow, VoiceParamPanel, BeatLayerStrip, Editor + transport sync, step indicator
 
 ### Phase 3 (F2): BASS Layer + Multi-pattern + Chain
 

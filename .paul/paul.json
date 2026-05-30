@@ -1,14 +1,14 @@
 {
   "name": "layerz",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "milestone": {
     "name": "v1.0 Initial Release",
     "version": "1.0.0",
     "status": "in_progress"
   },
   "phase": {
-    "number": 2,
-    "name": "F1-BEAT-Layer",
+    "number": 3,
+    "name": "F2-BASS-Layer",
     "status": "not_started"
   },
   "loop": {

@@ -10,21 +10,21 @@ See: .paul/PROJECT.md (updated 2026-05-28)
 ## Current Position
 
 Milestone: v1.0 Initial Release (v1.0.0)
-Phase: 2 of 8 (F1 — BEAT Layer) — Planning
-Plan: 02-01 + 02-02 — all APPLIED + SUMMARY written
-Status: APPLY complete, ready for UNIFY
-Last activity: 2026-05-29 — Phase 2 checkpoint approved; all UI fixes committed
+Phase: 3 of 8 (F2 — BASS Layer + Multi-pattern) — Not started
+Plan: None yet
+Status: Ready to plan
+Last activity: 2026-05-29 — Phase 2 (F1) complete, transitioned to Phase 3
 
 Progress:
-- Milestone: [█░░░░░░░░░] 12%
-- Phase 1: [██████████] 100% ✅
+- Milestone: [██░░░░░░░░] 25%
+- Phase 2: [██████████] 100% ✅
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ○     [APPLY complete, ready for UNIFY]
+  ✓        ✓        ✓     [Phase 2 complete — ready for next PLAN]
 ```
 
 ## Accumulated Context
@@ -32,7 +32,8 @@ PLAN ──▶ APPLY ──▶ UNIFY
 ### Decisions
 | Decision | Phase | Impact |
 |----------|-------|--------|
-| Thread-safety: lock-free-snapshot (C++17 short-mutex → C++20 atomic in F1) | F0→F1 | 02-01 includes C++20 bump + atomic<shared_ptr> upgrade; AC4 requires it |
+| Thread-safety: C++17 mutex retained | F1 deviation | macOS SDK lacks C++20 atomic<shared_ptr>; revisit when SDK updates |
+| Hat synthesis: ring modulation | F1 | f1×f2 inharmonic sines; HP noise removed; dead code in DrumVoice (hatFilter_) |
 | PROFILE_PLUGIN: 12 voices, 24 grains | F0 | Hardcoded in ProfileConfig.h; recalibrate post-F1 with real Faust |
 | PROFILE_STANDALONE: 24 voices, 40 grains | F0 | Same basis |
 | UserConfig separate from Project | F0 | LLM key + profile override in platform config dir, never .layerz |
@@ -47,13 +48,13 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-29
-Stopped at: Phase 2 (F1) plans created — 02-01 (engine) + 02-02 (UI)
-Next action: Review plans, then /paul:apply .paul/phases/02-beat-layer/
+Stopped at: Phase 2 (F1) UNIFY complete — transitioned to Phase 3 (F2)
+Next action: /paul:plan for Phase 3 (F2): BASS Layer + Multi-pattern + Chain
 Resume context:
-  02-01 (wave 1, autonomous): DrumVoice + VoiceBank + BeatSequencer + AudioThreadGuard
-  02-02 (wave 2, has human-verify): StepRow + VoiceParamPanel + BeatLayerStrip + Editor
-  Faust deferred — drum voices use JUCE DSP in F1.
-  Schema_version stays 1 (adding DrumTrack with defaults is backward-compatible).
+  F1 shipped: drum engine + BEAT UI + step indicator + stereo + transport sync.
+  ProfileConfig caps STILL PRELIMINARY — recalibrate with real drum voice benchmark (F1 obligation).
+  Dead code: hatFilter_ in DrumVoice unused after ring-mod change — remove in F5 cleanup.
+  F2 adds BASS mono-synth voice, multiple patterns, pattern chain, save/load .layerz.
 
 ---
 *STATE.md — Updated after every significant action*
