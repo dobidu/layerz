@@ -24,8 +24,7 @@ VoiceParamPanel::VoiceParamPanel(ProjectStore& store, int trackIndex)
     levelSlider_.setSliderStyle(juce::Slider::LinearHorizontal);
     levelSlider_.setRange(0.0, 1.0, 0.0);
     levelSlider_.setValue(1.0, juce::dontSendNotification);
-    levelSlider_.setTextBoxStyle(juce::Slider::TextBoxLeft, true, 32, 14);
-    levelSlider_.setTextValueSuffix("");
+    levelSlider_.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     levelSlider_.onValueChange = [this] {
         float newVal = static_cast<float>(levelSlider_.getValue());
         store_.postMutation([this, newVal](Project& p) {
@@ -38,7 +37,7 @@ VoiceParamPanel::VoiceParamPanel(ProjectStore& store, int trackIndex)
 
     // Mute button
     addAndMakeVisible(muteButton_);
-    muteButton_.setButtonText("MUTE");
+    muteButton_.setButtonText("M");
     muteButton_.setToggleable(true);
     muteButton_.setColour(juce::TextButton::buttonColourId, juce::Colour(0xFF2A2A2Au));
     muteButton_.setColour(juce::TextButton::buttonOnColourId, juce::Colour(0xFFE74C3Cu));

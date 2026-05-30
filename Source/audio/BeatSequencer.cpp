@@ -37,48 +37,24 @@ void BeatSequencer::process(const Project& snap,
         break; // only one BEAT layer
     }
 
-    // ── BASS layer ───────────────────────────────────────────────────────────
-    // Rendering order (audit M3): sustain pre-trigger → trigger+tail → no-trigger full block
+    // ── BASS layer (simple: trigger at block start, render full block) ──────
     for (const auto& layer : pattern.layers) {
         if (layer.type != LayerType::BASS) continue;
 
-        // Find the earliest BASS beat event in this block
-        int firstBassOffset = buf.getNumSamples(); // default = no trigger
+        // Check if any BASS event fires this block; trigger if so
         for (int bi = 0; bi < beatEvents.count; ++bi) {
             const auto& beatEv = beatEvents.data[bi];
             int beat_step = beatEv.beat_index % pattern.length_steps;
-            bool hasEvent = false;
-            for (const auto& event : layer.events)
-                if (event.step == beat_step && event.midi_note >= 0) { hasEvent = true; break; }
-            if (hasEvent && beatEv.sample_offset < firstBassOffset)
-                firstBassOffset = beatEv.sample_offset;
-        }
-
-        // 1. Render sustaining note from previous block (0 → firstBassOffset)
-        if (firstBassOffset > 0)
-            bank.processBass(buf, 0, firstBassOffset);
-
-        // 2. For each BASS trigger: release previous → trigger new → render tail
-        if (firstBassOffset < buf.getNumSamples()) {
-            for (int bi = 0; bi < beatEvents.count; ++bi) {
-                const auto& beatEv = beatEvents.data[bi];
-                int beat_step = beatEv.beat_index % pattern.length_steps;
-                for (const auto& event : layer.events) {
-                    if (event.step == beat_step && event.midi_note >= 0) {
-                        bank.releaseBass();
-                        bank.triggerBass(event.midi_note, event.velocity, layer.bass_params);
-                        bank.processBass(buf, beatEv.sample_offset,
-                                         buf.getNumSamples() - beatEv.sample_offset);
-                        break;
-                    }
+            for (const auto& event : layer.events) {
+                if (event.step == beat_step && event.midi_note >= 0) {
+                    bank.triggerBass(event.midi_note, event.velocity, layer.bass_params);
+                    break;
                 }
             }
         }
 
-        // 3. No BASS trigger this block: render full sustain
-        if (firstBassOffset == buf.getNumSamples())
-            bank.processBass(buf, 0, buf.getNumSamples());
-
-        break; // only one BASS layer
+        // Always render full block (sustain or new note)
+        bank.processBass(buf, 0, buf.getNumSamples());
+        break;
     }
 }
