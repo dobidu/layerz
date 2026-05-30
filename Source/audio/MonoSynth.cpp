@@ -7,86 +7,102 @@ static double midiNoteToHz(int note) noexcept {
 
 void MonoSynth::prepare(const juce::dsp::ProcessSpec& spec) noexcept {
     sampleRate_ = spec.sampleRate;
-    wasActive_  = false;
     phase_      = 0.0;
-
-    currentPitchHz_.reset(sampleRate_, 0.0);
-    currentPitchHz_.setCurrentAndTargetValue(440.0);
-
-    envelope_.setSampleRate(sampleRate_);
-    envelope_.reset();
-
-    filter_.prepare(spec);
-    filter_.setType(juce::dsp::StateVariableTPTFilterType::lowpass);
-    filter_.setCutoffFrequency(800.0f);
-    filter_.setResonance(0.3f);
+    envPos_     = 0;
+    envLen_     = 0;
+    releasing_  = false;
+    envVal_     = 0.0f;
+    targetHz_   = 440.0;
+    currentHz_  = 440.0;
 }
 
-void MonoSynth::trigger(int midiNote, float velocity, const BassVoiceParams& params) noexcept {
-    params_    = params;
+void MonoSynth::trigger(int midiNote, float velocity, const BassVoiceParams& p) noexcept {
+    params_    = p;
     velocity_  = velocity;
+    targetHz_  = midiNoteToHz(midiNote);
 
-    double targetHz = midiNoteToHz(midiNote);
+    // Instant pitch (glide in F3+)
+    currentHz_ = targetHz_;
 
-    if (params_.glide_ms > 0.0f && wasActive_) {
-        // Legato: interpolate pitch from current to target
-        currentPitchHz_.reset(sampleRate_, params_.glide_ms / 1000.0);
-        currentPitchHz_.setTargetValue(targetHz);
-    } else {
-        // Instant pitch jump
-        currentPitchHz_.reset(sampleRate_, 0.0);
-        currentPitchHz_.setCurrentAndTargetValue(targetHz);
-    }
+    // Simple manual ADSR — no juce::ADSR dependency
+    attackSamples_  = static_cast<int>(p.env_attack_ms  / 1000.0f * static_cast<float>(sampleRate_));
+    decaySamples_   = static_cast<int>(p.env_decay_ms   / 1000.0f * static_cast<float>(sampleRate_));
+    releaseSamples_ = static_cast<int>(p.env_release_ms / 1000.0f * static_cast<float>(sampleRate_));
+    sustain_        = juce::jlimit(0.0f, 1.0f, p.env_sustain);
 
-    // Reset filter on each trigger to clear any residual state
-    filter_.reset();
-    filter_.setCutoffFrequency(juce::jlimit(80.0f, 8000.0f, params_.filter_cutoff));
-    filter_.setResonance(juce::jmax(0.1f, params_.filter_resonance * 0.94f + 0.01f));
+    if (attackSamples_ < 1)  attackSamples_  = 1;
+    if (decaySamples_ < 1)   decaySamples_   = 1;
+    if (releaseSamples_ < 1) releaseSamples_ = 1;
 
-    // Update ADSR
-    juce::ADSR::Parameters envP;
-    envP.attack  = params_.env_attack_ms  / 1000.0f;
-    envP.decay   = params_.env_decay_ms   / 1000.0f;
-    envP.sustain = params_.env_sustain;
-    envP.release = params_.env_release_ms / 1000.0f;
-    envelope_.setParameters(envP);
-    envelope_.noteOn();
-
-    wasActive_ = true;
+    envPos_    = 0;
+    releasing_ = false;
+    envVal_    = 0.0f;
 }
 
 void MonoSynth::release() noexcept {
-    envelope_.noteOff();
+    if (isActive()) {
+        releasing_  = true;
+        releaseFrom_ = envVal_;
+        envPos_     = 0;
+    }
 }
 
 bool MonoSynth::isActive() const noexcept {
-    return envelope_.isActive();
+    return envLen_ > 0 || envPos_ > 0 || envVal_ > 0.0001f;
 }
 
 void MonoSynth::process(juce::AudioBuffer<float>& buf, int startSample, int numSamples) noexcept {
-    if (! isActive() || buf.getNumChannels() < 1) return;
+    if (buf.getNumChannels() < 1) return;
 
     int avail = buf.getNumSamples() - startSample;
     int write = juce::jmin(numSamples, avail);
     if (write <= 0) return;
 
+    // If note was just triggered (envPos_=0, not releasing), we ARE active
+    bool justTriggered = (!releasing_ && envVal_ < 0.0001f && envPos_ == 0
+                          && attackSamples_ > 0);
+    if (! justTriggered && envVal_ < 0.0001f && releasing_) return; // fully silent
+
     auto* ch = buf.getWritePointer(0);
 
     for (int i = 0; i < write; ++i) {
-        double hz = currentPitchHz_.getNextValue();
-        phase_ += hz / sampleRate_;
+        // Advance oscillator
+        phase_ += currentHz_ / sampleRate_;
         if (phase_ >= 1.0) phase_ -= 1.0;
 
         float osc = (params_.waveform == Waveform::SAW)
             ? static_cast<float>(phase_ * 2.0 - 1.0)
             : (phase_ < 0.5 ? 1.0f : -1.0f);
 
-        float env = envelope_.getNextSample();
-        // Filter: pass signal, but guard against NaN if filter state is bad
-        float filtered = filter_.processSample(0, osc);
-        float out = std::isfinite(filtered) ? filtered : osc;
-        ch[startSample + i] += out * env * velocity_ * params_.volume * 0.7f;
+        // Manual ADSR envelope
+        if (! releasing_) {
+            if (envPos_ < attackSamples_) {
+                envVal_ = static_cast<float>(envPos_) / static_cast<float>(attackSamples_);
+            } else if (envPos_ < attackSamples_ + decaySamples_) {
+                float t = static_cast<float>(envPos_ - attackSamples_)
+                          / static_cast<float>(decaySamples_);
+                envVal_ = 1.0f - t * (1.0f - sustain_);
+            } else {
+                envVal_ = sustain_;
+            }
+            ++envPos_;
+        } else {
+            if (envPos_ < releaseSamples_) {
+                float t = static_cast<float>(envPos_) / static_cast<float>(releaseSamples_);
+                envVal_ = releaseFrom_ * (1.0f - t);
+            } else {
+                envVal_ = 0.0f;
+            }
+            ++envPos_;
+        }
+
+        ch[startSample + i] += osc * envVal_ * velocity_ * params_.volume * 0.7f;
     }
 
-    if (! envelope_.isActive()) wasActive_ = false;
+    // Mark as inactive if release finished
+    if (releasing_ && envPos_ >= releaseSamples_) {
+        envVal_ = 0.0f;
+        envPos_ = 0;
+        envLen_ = 0;
+    }
 }

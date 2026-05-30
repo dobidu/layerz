@@ -25,7 +25,9 @@ void BeatSequencer::process(const Project& snap,
                 if (track.mute) continue;
                 for (const auto& event : track.events) {
                     if (event.step == beat_step) {
-                        bank.trigger(track.voice_type, event.velocity, track.param1,
+                        // Apply level from snapshot (not VoiceBank's stale array)
+                        float vel = event.velocity * juce::jlimit(0.0f, 1.0f, track.level);
+                        bank.trigger(track.voice_type, vel, track.param1,
                                      beatEv.sample_offset, buf);
                         break;
                     }
