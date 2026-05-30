@@ -150,8 +150,18 @@ void LayerzProcessor::getStateInformation(juce::MemoryBlock& destData) {
 void LayerzProcessor::setStateInformation(const void* data, int sizeInBytes) {
     auto json = juce::String::fromUTF8(static_cast<const char*>(data), sizeInBytes);
     Project loaded;
-    if (ProjectStore::fromJson(json, loaded).wasOk())
+    if (ProjectStore::fromJson(json, loaded).wasOk()) {
+        // Check if loaded project has a BASS layer; if not, seed one
+        bool hasBass = false;
+        for (const auto& pat : loaded.patterns)
+            for (const auto& l : pat.layers)
+                if (l.type == LayerType::BASS) { hasBass = true; break; }
+
         store_.postMutation([&loaded](Project& p) { p = loaded; });
+
+        if (! hasBass)
+            seedTestPattern(); // re-adds BASS layer to the first pattern
+    }
 }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() {
