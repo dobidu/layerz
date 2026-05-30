@@ -5,6 +5,7 @@
 #include "audio/ProfileConfig.h"
 #include "audio/VoiceBank.h"
 #include "audio/BeatSequencer.h"
+#include "audio/ChainManager.h"
 #include "audio/AudioThreadGuard.h"
 #include "config/UserConfig.h"
 
@@ -39,9 +40,9 @@ public:
     // GUI thread accessors
     ProjectStore&      projectStore()  noexcept { return store_; }
     const UserConfig&  userConfig()    const noexcept { return config_; }
-    Clock&             getClock()      noexcept { return clock_; }
+    Clock&             getClock()        noexcept { return clock_; }
+    ChainManager&      chainManager()   noexcept { return chain_; }
     void setStandalonePlaying(bool playing) noexcept { clock_.setPlaying(playing); }
-    // GUI thread: current playing step (0-15), -1 if not playing
     int currentPlayStep() const noexcept { return lastPlayStep_.load(std::memory_order_relaxed); }
 
 private:
@@ -51,6 +52,7 @@ private:
     ProfileConfig profile_;
     VoiceBank          voiceBank_;
     BeatSequencer      sequencer_;
+    ChainManager       chain_;
     std::atomic<int>   lastPlayStep_ { -1 };
 
     void seedTestPattern();

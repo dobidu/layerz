@@ -263,6 +263,17 @@ juce::Result ProjectStore::fromJson(const juce::String& json, Project& out) {
     return juce::Result::ok();
 }
 
+juce::Result ProjectStore::saveToFile(const juce::File& target) const {
+    auto snap = snapshot();
+    auto json = toJson(*snap);
+    auto tmp  = target.getSiblingFile(target.getFileName() + ".tmp");
+    if (! tmp.replaceWithText(json))
+        return juce::Result::fail("Could not write to " + tmp.getFullPathName());
+    if (! tmp.moveFileTo(target))
+        return juce::Result::fail("Could not rename tmp to " + target.getFullPathName());
+    return juce::Result::ok();
+}
+
 juce::Result ProjectStore::loadFromFile(const juce::File& source) {
     if (! source.existsAsFile())
         return juce::Result::fail("File not found: " + source.getFullPathName());

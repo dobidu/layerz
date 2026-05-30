@@ -9,9 +9,10 @@ class BeatSequencer {
 public:
     void prepare(double sampleRate) noexcept;
 
-    // Audio thread: for each beat event, scan patterns[0].layers[0].drum_tracks
-    // and trigger any matching step events via bank. Fully bounds-guarded.
+    // Audio thread: dispatch events for the pattern at patternIndex.
+    // patternIndex replaces hardcoded patterns[0] from 03-01 (audit SR3).
     void process(const Project& snap,
+                 int patternIndex,
                  const BeatEvents& beatEvents,
                  juce::AudioBuffer<float>& buf,
                  VoiceBank& bank) noexcept;

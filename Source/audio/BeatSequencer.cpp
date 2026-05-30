@@ -5,11 +5,13 @@ void BeatSequencer::prepare(double sampleRate) noexcept {
 }
 
 void BeatSequencer::process(const Project& snap,
+                             int patternIndex,
                              const BeatEvents& beatEvents,
                              juce::AudioBuffer<float>& buf,
                              VoiceBank& bank) noexcept {
     if (snap.patterns.empty()) return;
-    const auto& pattern = snap.patterns[0];   // 03-02 will replace with patternIndex
+    int pi = juce::jlimit(0, (int)snap.patterns.size()-1, patternIndex);
+    const auto& pattern = snap.patterns[static_cast<std::size_t>(pi)];
     if (pattern.layers.empty()) return;
 
     // ── BEAT layer ──────────────────────────────────────────────────────────

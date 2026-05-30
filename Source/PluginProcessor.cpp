@@ -71,12 +71,33 @@ void LayerzProcessor::seedTestPattern() {
         }
         pat.layers.push_back(bassLayer);
         p.patterns.push_back(pat);
+
+        // Pattern B — off-beat variation for chain testing
+        Pattern patB;
+        patB.id = "pattern-b"; patB.length_steps = 16;
+        Layer beatB; beatB.type = LayerType::BEAT;
+        DrumTrack kickB; kickB.voice_type = "kick"; kickB.param1 = 120.0f;
+        for (int s : {2, 6, 10, 14}) {
+            Event e; e.step = s; e.velocity = 0.9f; kickB.events.push_back(e);
+        }
+        DrumTrack hatB; hatB.voice_type = "hat"; hatB.param1 = 25.0f;
+        for (int s = 1; s < 16; s += 2) {
+            Event e; e.step = s; e.velocity = 0.5f; hatB.events.push_back(e);
+        }
+        beatB.drum_tracks.push_back(kickB);
+        beatB.drum_tracks.push_back(hatB);
+        patB.layers.push_back(beatB);
+        p.patterns.push_back(patB);
+
+        // Chain: A→B→A→B (1 bar each)
+        p.chain = { {"default", 1}, {"pattern-b", 1} };
     });
 }
 
 void LayerzProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     voiceBank_.prepare(sampleRate, samplesPerBlock);
     sequencer_.prepare(sampleRate);
+    chain_.prepare(sampleRate);
     clock_.prepare(sampleRate, samplesPerBlock);
 
     // wrapperType is set by JUCE before constructor — reliable standalone detection
@@ -122,7 +143,8 @@ void LayerzProcessor::processBlock(juce::AudioBuffer<float>& buffer,
             pos = *p;
 
     auto events = clock_.process(pos, buffer.getNumSamples());
-    sequencer_.process(*snap, events, buffer, voiceBank_);
+    int patIdx  = chain_.process(events, *snap);
+    sequencer_.process(*snap, patIdx, events, buffer, voiceBank_);
 
     // Copy ch0 → ch1 for stereo output (voices write mono to ch0 only)
     if (buffer.getNumChannels() >= 2)

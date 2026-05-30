@@ -8,10 +8,14 @@ LayerzEditor::LayerzEditor(LayerzProcessor& p)
     : AudioProcessorEditor(&p)
     , processorRef_(p)
     , beatStrip_(p)
+    , patternSelector_(p)
+    , bassStrip_(p)
 {
     addAndMakeVisible(beatStrip_);
+    addAndMakeVisible(bassStrip_);
+    addAndMakeVisible(patternSelector_);
+    setWantsKeyboardFocus(true);
 
-    // wrapperType is reliable before prepareToPlay; isStandaloneMode() is not (set in prepareToPlay)
     bool standalone = (p.wrapperType == juce::AudioProcessor::wrapperType_Standalone);
 
     // BPM slider — standalone only
@@ -44,6 +48,35 @@ LayerzEditor::LayerzEditor(LayerzProcessor& p)
 }
 
 LayerzEditor::~LayerzEditor() { stopTimer(); }
+
+bool LayerzEditor::keyPressed(const juce::KeyPress& key) {
+    bool cmd = key.getModifiers().isCommandDown();
+    if (cmd && key.getKeyCode() == 'S') {
+        auto fc = std::make_shared<juce::FileChooser>("Save project",
+            juce::File::getSpecialLocation(juce::File::userDocumentsDirectory), "*.layerz");
+        fc->launchAsync(juce::FileBrowserComponent::saveMode
+                      | juce::FileBrowserComponent::canSelectFiles,
+            [this, fc](const juce::FileChooser&) mutable {
+                auto f = fc->getResult();
+                if (f.getFullPathName().isNotEmpty())
+                    processorRef_.projectStore().saveToFile(f.withFileExtension("layerz"));
+            });
+        return true;
+    }
+    if (cmd && key.getKeyCode() == 'O') {
+        auto fc = std::make_shared<juce::FileChooser>("Open project",
+            juce::File::getSpecialLocation(juce::File::userDocumentsDirectory), "*.layerz");
+        fc->launchAsync(juce::FileBrowserComponent::openMode
+                      | juce::FileBrowserComponent::canSelectFiles,
+            [this, fc](const juce::FileChooser&) mutable {
+                auto f = fc->getResult();
+                if (f.existsAsFile())
+                    processorRef_.projectStore().loadFromFile(f);
+            });
+        return true;
+    }
+    return false;
+}
 
 void LayerzEditor::timerCallback() {
     if (! processorRef_.getClock().isStandaloneMode()) return;
@@ -105,5 +138,8 @@ void LayerzEditor::resized() {
         bpmSlider_.setBounds (topBar.withTrimmedLeft(120).withWidth(120).reduced(4));
         playButton_.setBounds(topBar.withTrimmedLeft(250).withWidth(80).reduced(4));
     }
+    // Pattern selector always visible — right-aligned in top bar
+    patternSelector_.setBounds(getWidth() - 120, 4, 116, kTopBarHeight - 8);
     beatStrip_.setBounds(0, y, getWidth(), kBeatStripH);
+    bassStrip_.setBounds(0, y + kBeatStripH, getWidth(), 80);  // 24px header + 56px row
 }
