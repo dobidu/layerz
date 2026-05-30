@@ -38,10 +38,10 @@ void MonoSynth::trigger(int midiNote, float velocity, const BassVoiceParams& par
         currentPitchHz_.setCurrentAndTargetValue(targetHz);
     }
 
-    // Update filter coefficients (safe in trigger — not inside sample loop)
-    filter_.setCutoffFrequency(params_.filter_cutoff);
-    // Map resonance 0-1 → 0.01-0.95 (SVF Q range)
-    filter_.setResonance(params_.filter_resonance * 0.94f + 0.01f);
+    // Reset filter on each trigger to clear any residual state
+    filter_.reset();
+    filter_.setCutoffFrequency(juce::jlimit(80.0f, 8000.0f, params_.filter_cutoff));
+    filter_.setResonance(juce::jmax(0.1f, params_.filter_resonance * 0.94f + 0.01f));
 
     // Update ADSR
     juce::ADSR::Parameters envP;
@@ -78,12 +78,14 @@ void MonoSynth::process(juce::AudioBuffer<float>& buf, int startSample, int numS
         if (phase_ >= 1.0) phase_ -= 1.0;
 
         float osc = (params_.waveform == Waveform::SAW)
-            ? static_cast<float>(phase_ * 2.0 - 1.0)          // bipolar saw -1..1
-            : (phase_ < 0.5 ? 1.0f : -1.0f);                  // bipolar square
+            ? static_cast<float>(phase_ * 2.0 - 1.0)
+            : (phase_ < 0.5 ? 1.0f : -1.0f);
 
-        float env      = envelope_.getNextSample();
-        float filtered = filter_.processSample(0, osc * env);
-        ch[startSample + i] += filtered * velocity_ * params_.volume * 0.55f;
+        float env = envelope_.getNextSample();
+        // Filter: pass signal, but guard against NaN if filter state is bad
+        float filtered = filter_.processSample(0, osc);
+        float out = std::isfinite(filtered) ? filtered : osc;
+        ch[startSample + i] += out * env * velocity_ * params_.volume * 0.7f;
     }
 
     if (! envelope_.isActive()) wasActive_ = false;
