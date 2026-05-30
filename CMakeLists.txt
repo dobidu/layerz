@@ -40,6 +40,7 @@ target_sources(LAYERZ PRIVATE
     Source/audio/DrumVoice.cpp
     Source/audio/VoiceBank.cpp
     Source/audio/BeatSequencer.cpp
+    Source/audio/MonoSynth.cpp
     Source/gui/StepRow.cpp
     Source/gui/VoiceParamPanel.cpp
     Source/gui/BeatLayerStrip.cpp
@@ -78,6 +79,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         Source/audio/DrumVoice.cpp
         Source/audio/VoiceBank.cpp
         Source/audio/BeatSequencer.cpp
+        Source/audio/MonoSynth.cpp
         Source/gui/StepRow.cpp
         Source/gui/VoiceParamPanel.cpp
         Source/gui/BeatLayerStrip.cpp

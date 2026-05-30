@@ -1,9 +1,10 @@
 #pragma once
 #include "DrumVoice.h"
+#include "MonoSynth.h"
 #include <string>
 
-// Manages 4 drum voice instances (kick/snare/hat/perc).
-// All methods on the audio path are noexcept and allocation-free after prepare().
+// Manages 4 drum voices + 1 BASS mono-synth voice.
+// All audio-path methods are noexcept and allocation-free after prepare().
 class VoiceBank {
 public:
     void prepare(double sampleRate, int maxBlockSize) noexcept;
@@ -16,12 +17,18 @@ public:
     void setLevel(const std::string& type, float level) noexcept;
     void setMute (const std::string& type, bool  muted) noexcept;
 
+    // BASS voice (audio thread)
+    void triggerBass(int midiNote, float velocity, const BassVoiceParams& p) noexcept;
+    void releaseBass() noexcept;
+    // Renders numSamples of BASS into buf ch0 starting at startSample.
+    void processBass(juce::AudioBuffer<float>& buf, int startSample, int numSamples) noexcept;
+
 private:
     static constexpr int kVoiceCount = 4;
     DrumVoice voices_[kVoiceCount];
     float     levels_[kVoiceCount] = { 1.0f, 1.0f, 1.0f, 1.0f };
     bool      mutes_ [kVoiceCount] = { false, false, false, false };
+    MonoSynth bass_;
 
-    // Returns -1 if unknown type
     static int typeIndex(const std::string& t) noexcept;
 };

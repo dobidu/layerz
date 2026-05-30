@@ -41,7 +41,55 @@ static juce::var eventToVar(const Event& e) {
     obj->setProperty("step",               e.step);
     obj->setProperty("velocity",           e.velocity);
     obj->setProperty("micro_offset_ticks", e.micro_offset_ticks);
+    obj->setProperty("midi_note",          e.midi_note);
     return obj;
+}
+
+static juce::String waveformToString(Waveform w) {
+    return w == Waveform::SQUARE ? "SQUARE" : "SAW";
+}
+static Waveform waveformFromString(const juce::String& s) {
+    return s == "SQUARE" ? Waveform::SQUARE : Waveform::SAW;
+}
+
+static juce::var bassVoiceParamsToVar(const BassVoiceParams& b) {
+    auto* obj = new juce::DynamicObject();
+    obj->setProperty("waveform",          waveformToString(b.waveform));
+    obj->setProperty("filter_cutoff",     b.filter_cutoff);
+    obj->setProperty("filter_resonance",  b.filter_resonance);
+    obj->setProperty("env_attack_ms",     b.env_attack_ms);
+    obj->setProperty("env_decay_ms",      b.env_decay_ms);
+    obj->setProperty("env_sustain",       b.env_sustain);
+    obj->setProperty("env_release_ms",    b.env_release_ms);
+    obj->setProperty("glide_ms",          b.glide_ms);
+    obj->setProperty("volume",            b.volume);
+    return obj;
+}
+static juce::Result varToBassVoiceParams(const juce::var& v, BassVoiceParams& out) {
+    if (! v.isObject()) return juce::Result::ok(); // missing → defaults
+    out.waveform         = waveformFromString(v["waveform"].toString());
+    out.filter_cutoff    = static_cast<float>(static_cast<double>(v["filter_cutoff"]));
+    out.filter_resonance = static_cast<float>(static_cast<double>(v["filter_resonance"]));
+    out.env_attack_ms    = static_cast<float>(static_cast<double>(v["env_attack_ms"]));
+    out.env_decay_ms     = static_cast<float>(static_cast<double>(v["env_decay_ms"]));
+    out.env_sustain      = static_cast<float>(static_cast<double>(v["env_sustain"]));
+    out.env_release_ms   = static_cast<float>(static_cast<double>(v["env_release_ms"]));
+    out.glide_ms         = static_cast<float>(static_cast<double>(v["glide_ms"]));
+    out.volume           = static_cast<float>(static_cast<double>(v["volume"]));
+    return juce::Result::ok();
+}
+
+static juce::var patternChainEntryToVar(const PatternChainEntry& e) {
+    auto* obj = new juce::DynamicObject();
+    obj->setProperty("pattern_id", juce::String(e.pattern_id));
+    obj->setProperty("bars",       e.bars);
+    return obj;
+}
+static juce::Result varToPatternChainEntry(const juce::var& v, PatternChainEntry& out) {
+    if (! v.isObject()) return juce::Result::fail("PatternChainEntry is not an object");
+    out.pattern_id = v["pattern_id"].toString().toStdString();
+    out.bars       = static_cast<int>(v["bars"]);
+    return juce::Result::ok();
 }
 
 static juce::var aestheticsToVar(const Aesthetics& a) {
@@ -74,6 +122,7 @@ static juce::var layerToVar(const Layer& l) {
     juce::Array<juce::var> dts;
     for (const auto& dt : l.drum_tracks) dts.add(drumTrackToVar(dt));
     obj->setProperty("drum_tracks", dts);
+    obj->setProperty("bass_params", bassVoiceParamsToVar(l.bass_params));
     return obj;
 }
 
@@ -96,6 +145,10 @@ juce::String ProjectStore::toJson(const Project& p) {
     juce::Array<juce::var> patterns;
     for (const auto& pat : p.patterns) patterns.add(patternToVar(pat));
     root->setProperty("patterns", patterns);
+    root->setProperty("active_pattern_index", p.active_pattern_index);
+    juce::Array<juce::var> chain;
+    for (const auto& e : p.chain) chain.add(patternChainEntryToVar(e));
+    root->setProperty("chain", chain);
     return juce::JSON::toString(juce::var(root), false);
 }
 
@@ -106,6 +159,7 @@ static juce::Result varToEvent(const juce::var& v, Event& out) {
     out.step               = static_cast<int>  (v["step"]);
     out.velocity           = static_cast<float>(static_cast<double>(v["velocity"]));
     out.micro_offset_ticks = static_cast<int>  (v["micro_offset_ticks"]);
+    out.midi_note          = static_cast<int>  (v["midi_note"]);
     return juce::Result::ok();
 }
 
@@ -152,6 +206,9 @@ static juce::Result varToLayer(const juce::var& v, Layer& out) {
             out.drum_tracks.push_back(track);
         }
     }
+    // Missing bass_params → default-initialised (backward compat)
+    if (v["bass_params"].isObject())
+        if (auto r = varToBassVoiceParams(v["bass_params"], out.bass_params); r.failed()) return r;
     return juce::Result::ok();
 }
 
@@ -192,6 +249,15 @@ juce::Result ProjectStore::fromJson(const juce::String& json, Project& out) {
             Pattern pat;
             if (auto r = varToPattern(p, pat); r.failed()) return r;
             out.patterns.push_back(pat);
+        }
+    }
+    // chain and active_pattern_index — missing in older files → safe defaults
+    out.active_pattern_index = static_cast<int>(parsed["active_pattern_index"]);
+    if (const auto* cArr = parsed["chain"].getArray()) {
+        for (const auto& e : *cArr) {
+            PatternChainEntry entry;
+            if (auto r = varToPatternChainEntry(e, entry); r.failed()) return r;
+            out.chain.push_back(entry);
         }
     }
     return juce::Result::ok();

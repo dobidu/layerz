@@ -59,6 +59,17 @@ void LayerzProcessor::seedTestPattern() {
         beatLayer.drum_tracks.push_back(hat);
         beatLayer.drum_tracks.push_back(perc);
         pat.layers.push_back(beatLayer);
+
+        // BASS layer: C2/E2/G2/Bb2 on quarter beats
+        Layer bassLayer;
+        bassLayer.type = LayerType::BASS;
+        const int bassNotes[] = { 36, 40, 43, 46 }; // C2, E2, G2, Bb2
+        const int bassSteps[] = { 0, 4, 8, 12 };
+        for (int i = 0; i < 4; ++i) {
+            Event e; e.step = bassSteps[i]; e.velocity = 0.8f; e.midi_note = bassNotes[i];
+            bassLayer.events.push_back(e);
+        }
+        pat.layers.push_back(bassLayer);
         p.patterns.push_back(pat);
     });
 }
@@ -78,12 +89,32 @@ void LayerzProcessor::releaseResources() {}
 
 void LayerzProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                                    juce::MidiBuffer& midiMessages) {
-    AudioThreadGuard guard;  // marks audio thread active for RT safety checks
-    juce::ignoreUnused(midiMessages);
+    AudioThreadGuard guard;
     buffer.clear();
 
-    // Lock-free atomic snapshot — zero user-level locks on audio thread (F1-AC4)
+    // Lock-free atomic snapshot — use for BOTH sequencer AND MIDI handler (audit M1)
     auto snap = store_.snapshot();
+
+    // Pre-extract BASS params ONCE before MIDI loop (audit M1+M2)
+    BassVoiceParams midiBassPar;
+    if (!snap->patterns.empty()) {
+        int pi = juce::jlimit(0, (int)snap->patterns.size()-1, snap->active_pattern_index);
+        for (const auto& l : snap->patterns[static_cast<std::size_t>(pi)].layers)
+            if (l.type == LayerType::BASS) { midiBassPar = l.bass_params; break; }
+    }
+
+    // MIDI routing — uses snap already acquired above (no second snapshot() call)
+    for (const auto metadata : midiMessages) {
+        const auto msg = metadata.getMessage();
+        int samplePos = metadata.samplePosition;
+        if (msg.isNoteOn()) {
+            voiceBank_.releaseBass();
+            voiceBank_.triggerBass(msg.getNoteNumber(), msg.getVelocity() / 127.0f, midiBassPar);
+            voiceBank_.processBass(buffer, samplePos, buffer.getNumSamples() - samplePos);
+        } else if (msg.isNoteOff()) {
+            voiceBank_.releaseBass();
+        }
+    }
 
     juce::AudioPlayHead::PositionInfo pos;
     if (auto* ph = getPlayHead())
