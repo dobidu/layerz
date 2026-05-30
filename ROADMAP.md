@@ -13,6 +13,36 @@ LAYERZ v1 is a usable, distributable groovebox available as standalone applicati
 - "Perform mode" UI variant for live use.
 - Additional voice types if v1's prove insufficient (FM, wavetable as candidates).
 
+## v2 scope — Sample Banks (registered)
+
+LAYERZ v1 notes sampling as "one of several voice sources (chop + play)." The full
+sample bank system is registered for post-v1 development:
+
+**Format**: A local directory structure with a `.layerzbank` JSON descriptor per bank:
+```json
+{
+  "name": "My Bank",
+  "version": 1,
+  "voices": [
+    { "name": "Kick 808", "file": "kick_808.wav", "tags": ["kick", "808"],
+      "pitch_root": 36, "trim_start_ms": 0, "trim_end_ms": 0 }
+  ]
+}
+```
+- Banks are directories on the user's filesystem (no cloud, no telemetry)
+- `.layerzbank` indexes samples, avoids rescanning on each load
+- `pitch_root`: MIDI note the sample sounds "natural" at (enables pitch-correct playback)
+- Tags enable filtering in the voice selector UI
+- Format is GPLv3-compatible (JSON, self-describing, forward-compat via schema_version)
+
+**Integration point**: VoiceBank → SampleVoice type (alongside DrumVoice, MonoSynth, Faust voices).
+A SampleVoice reads from the pre-loaded bank, applies pitch shift and trim, renders to buffer.
+Bank loading happens at project-load time on a background thread (never on audio thread).
+
+**Roadmap placement**: Post-F4 (all four layers stable) — either as F4.5 or early F5.
+The voice architecture (VoiceBank.h) is designed for this extension; adding a new voice
+type does not change existing voices.
+
 ## Future ecosystem (not roadmapped)
 
 - Hardware controller integration (Push-class devices, grid controllers).

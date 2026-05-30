@@ -35,6 +35,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Thread-safety: C++17 mutex retained | F1 deviation | macOS SDK lacks C++20 atomic<shared_ptr>; revisit when SDK updates |
 | Hat synthesis: ring modulation | F1 | f1×f2 inharmonic sines; HP noise removed |
 | MonoSynth: minimal oscillator only | F2 deviation | No ADSR/filter yet; stale saved state was root cause of silence; add envelope in F3 |
+| F3.99: Strategy B carry-forward queue | F3 spike | DRAG defer to next block; PUSH clamp to 0; queue cap 64; drain before seed reset |
 | saveToFile() was missing impl | F2 bug | Declared in header since F0 but never written; added atomic tmp+rename |
 | PROFILE_PLUGIN: 12 voices, 24 grains | F0 | Hardcoded in ProfileConfig.h; recalibrate post-F1 with real Faust |
 | PROFILE_STANDALONE: 24 voices, 40 grains | F0 | Same basis |
