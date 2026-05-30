@@ -11,9 +11,9 @@ See: .paul/PROJECT.md (updated 2026-05-28)
 
 Milestone: v1.0 Initial Release (v1.0.0)
 Phase: 2 of 8 (F1 — BEAT Layer) — Planning
-Plan: 02-01 + 02-02 created + audited, awaiting approval
-Status: PLAN created and audited, ready for APPLY
-Last activity: 2026-05-29 — Enterprise audit complete; applied 8 must-have + 5 strongly-recommended
+Plan: 02-01 + 02-02 — all APPLIED + SUMMARY written
+Status: APPLY complete, ready for UNIFY
+Last activity: 2026-05-29 — Phase 2 checkpoint approved; all UI fixes committed
 
 Progress:
 - Milestone: [█░░░░░░░░░] 12%
@@ -24,7 +24,7 @@ Progress:
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ○        ○     [Plans created, awaiting approval]
+  ✓        ✓        ○     [APPLY complete, ready for UNIFY]
 ```
 
 ## Accumulated Context
