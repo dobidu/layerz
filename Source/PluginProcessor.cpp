@@ -144,7 +144,11 @@ void LayerzProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 
     auto events = clock_.process(pos, buffer.getNumSamples());
     int patIdx  = chain_.process(events, *snap);
-    sequencer_.process(*snap, patIdx, events, buffer, voiceBank_);
+
+    // Release bass when transport is stopped (standalone or plugin)
+    bool playing = clock_.isStandaloneMode() ? clock_.isPlaying() : pos.getIsPlaying();
+    if (! playing) { voiceBank_.releaseBass(); }
+    else           { sequencer_.process(*snap, patIdx, events, buffer, voiceBank_); }
 
     // Copy ch0 → ch1 for stereo output (voices write mono to ch0 only)
     if (buffer.getNumChannels() >= 2)
